@@ -1,0 +1,26 @@
+[
+	{
+		"file": "C:\\Users\\po127\\Unreal Projects\\STEW_K\\Source\\STEW_K\\STEW_K.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.41.34120\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\po127\\Unreal Projects\\STEW_K\\.vscode\\compileCommands_STEW_K\\STEW_K.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.4\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\po127\\Unreal Projects\\STEW_K\\Source\\STEW_K\\STEW_K.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.41.34120\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\po127\\Unreal Projects\\STEW_K\\.vscode\\compileCommands_STEW_K\\STEW_K.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.4\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\po127\\Unreal Projects\\STEW_K\\Source\\STEW_K\\STEW_K.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.41.34120\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\po127\\Unreal Projects\\STEW_K\\.vscode\\compileCommands_STEW_K\\STEW_K.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.4\\Engine\\Source"
+	}
+]
