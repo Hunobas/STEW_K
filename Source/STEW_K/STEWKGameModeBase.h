@@ -33,22 +33,58 @@ public:
     void GainXpGem();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "아웃 게임")
-    float StartDelay = 0.f;
+    float StartDelay = 3.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "행성 공전")
     float OrbitRadius = 20000.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "행성 공전")
     float OrbitPeriod = 1200.0f; // 20분
 
+    // ====================== 게터 =============================
+	float GetHealthScale() const { return HealthScale; }
+	float GetDamageScale() const { return DamageScale; }
+	float GetSpeedScale() const { return SpeedScale; }
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<AEnemyCharacter> ZacoBomb;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
-    float SpawnInterval = 5.f;
+    int32 ZacoBomb_SpawnNumber = 1;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
-    float IncreaseDifficultyInterval = 60.f;
+    float ZacoBomb_SpawnInterval = 5.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    float ZacoBomb_IncreaseDifficultyInterval = 60.f;
+
+    FTimerHandle ZacoBomb_SpawnTimerHandle;
+    FTimerHandle ZacoBomb_DifficultyTimerHandle;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<AEnemyCharacter> ZacoSwarm;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    int32 ZacoSwarm_SpawnNumber = 10;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    float ZacoSwarm_SpawnInterval = 60.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    float ZacoSwarm_IncreaseDifficultyInterval = 180.f;
+
+    FTimerHandle ZacoSwarm_SpawnTimerHandle;
+    FTimerHandle ZacoSwarm_DifficultyTimerHandle;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<AEnemyCharacter> ZacoBeam;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    int32 ZacoBeam_SpawnNumber = 1;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    float ZacoBeam_SpawnInterval = 7.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
+    float ZacoBeam_IncreaseDifficultyInterval = 60.f;
+
+    FTimerHandle ZacoBeam_SpawnTimerHandle;
+    FTimerHandle ZacoBeam_DifficultyTimerHandle;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     float SpawnRadius = 2000.f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     int32 MaxEnemies = 50;
     UPROPERTY(EditDefaultsOnly, Category = "몬스터")
@@ -68,19 +104,19 @@ private:
     UPROPERTY()
     URewardSelectionService* RewardSelectionService;
 
-    FTimerHandle SpawnTimerHandle;
     FTimerHandle GameTimerHandle;
-    FTimerHandle DifficultyTimerHandle;
     int32 CurrentEnemyCount = 0;
     int32 CurrentXpGemCount = 0;
     float ElapsedTime = 0.f;
     APlanetPawn* PlayerPawn;
 
     void StartGame();
-    void SpawnEnemy();
+    void SpawnEnemies(TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber);
     void SpawnXpGem(AEnemyCharacter* DestroyedEnemy);
-    void IncreaseSpawnRate();
     void EndGame();
+
+    typedef void (ASTEWKGameModeBase::*SpawnFunctionPtr)();
+    void IncreaseDifficulty(FTimerHandle* SpawnTimerHandle, float* SpawnInterval, TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber);
 
     FVector GetRandomSpawnLocation() const;
     void InitializeRewardSelectionService();

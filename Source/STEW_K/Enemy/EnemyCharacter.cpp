@@ -1,8 +1,11 @@
 // EnemyCharacter.cpp
+#include "Components/SceneComponent.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "../Planet/PlanetPawn.h"
+#include "../STEWKGameModeBase.h"
 #include "../HealthComponent.h"
 
 #include "EnemyCharacter.h"
@@ -12,6 +15,9 @@ AEnemyCharacter::AEnemyCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+    AimPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Aim Point"));
+    AimPoint->SetupAttachment(RootComponent);
 
 	AutoPossessAI = EAutoPossessAI::Spawned;
 }
@@ -28,6 +34,12 @@ void AEnemyCharacter::BeginPlay()
         MovementComponent->DefaultLandMovementMode = EMovementMode::MOVE_Flying;
         MovementComponent->DefaultWaterMovementMode = EMovementMode::MOVE_Flying;
     }
+    if (ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		SetHealthScale(GameMode->GetHealthScale());
+        SetDamageScale(GameMode->GetDamageScale());
+        SetSpeedScale(GameMode->GetSpeedScale());
+	}
 	HealthComponent = FindComponentByClass<UHealthComponent>();
 }
 
@@ -44,6 +56,40 @@ float AEnemyCharacter::GetHealthPercentage() const
         return HealthComponent->GetHealth() / HealthComponent->GetMaxHealth();
     }
     return 0.0f;
+}
+
+void AEnemyCharacter::ReadyToShoot()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+        JustAimTemplate,
+        AimPoint,
+        NAME_None,
+        FVector::ZeroVector,
+        AimPoint->GetComponentRotation(),
+        EAttachLocation::SnapToTarget,
+        true
+    );
+
+	FTimerHandle ShootTimerHandle;
+	GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &AEnemyCharacter::Shoot, JustAim, false);
+}
+
+void AEnemyCharacter::Shoot()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+        ShotMuzzleTemplate,
+        AimPoint,
+        NAME_None,
+        FVector::ZeroVector,
+        FRotator::ZeroRotator,
+        EAttachLocation::SnapToTarget,
+        true
+    );
+    UGameplayStatics::PlaySoundAtLocation(
+        GetWorld(),
+        ShotSound,
+        AimPoint->GetComponentLocation()
+    );
 }
 
 void AEnemyCharacter::HandleDestruction()

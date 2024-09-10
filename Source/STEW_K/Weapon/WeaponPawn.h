@@ -33,15 +33,17 @@ public:
 	void SetAdditionalPenetration(const int32& NewAdditionalPenetration) { AdditionalPenetration = NewAdditionalPenetration; }
 	void SetProjectileSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
 	void SetAdditionalCritical(const float& NewAdditionalCritical) { AdditionalCritical = NewAdditionalCritical; }
-	void SetFireRate(const float& NewFireRate)
+	virtual void SetFireRate(const float& NewFireRate)
 	{
 		FireRate = NewFireRate;
 		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::FireProjectile, FireRate, true);
+		FireProjectile();
 	}
-	void UpdateFireRate(const float& HasteScale)
+	virtual void UpdateFireRate(const float& HasteScale)
 	{
 		FireRate /= HasteScale;
 		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::FireProjectile, FireRate, true);
+		FireProjectile();
 	}
 
 protected:

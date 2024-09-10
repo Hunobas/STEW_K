@@ -2,9 +2,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 
-#include "Planet/PlanetPawn.h"
-#include "Enemy/EnemyCharacter.h"
-#include "XPGem.h"
+#include "../Planet/PlanetPawn.h"
+#include "../Enemy/EnemyCharacter.h"
+#include "../XPGem.h"
 
 #include "ZacoBombAIController.h"
 

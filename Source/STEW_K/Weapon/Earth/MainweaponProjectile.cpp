@@ -35,13 +35,6 @@ AMainweaponProjectile::AMainweaponProjectile()
 	InitialLifeSpan = LifeSpan;
 }
 
-// Called every frame
-void AMainweaponProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AMainweaponProjectile::Initialize()
 {
     ProjectileMovementComponent->ProjectileGravityScale = 0.f;

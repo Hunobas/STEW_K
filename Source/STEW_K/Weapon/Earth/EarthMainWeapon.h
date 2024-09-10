@@ -38,11 +38,22 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "레벨 업")
 	float LaserDamage_LV7 = 100.f;
 	UPROPERTY(EditDefaultsOnly, Category = "레벨 업")
-	float LaserRate_LV7 = 5.f;
+	float LaserRate_LV7 = 4.f;
 	UPROPERTY(EditDefaultsOnly, Category = "레벨 업")
 	float MaxRange_LV7 = 8000.f;
 	UPROPERTY(EditDefaultsOnly, Category = "레벨 업")
 	int32 MaxHitInOneCycle_LV7 = 2;
+
+	virtual void SetFireRate(const float& NewFireRate) override
+	{
+		Super::SetFireRate(NewFireRate);
+		LaserTraceDuration = GetFireRate() * 0.8f;
+	}
+	virtual void UpdateFireRate(const float& HasteScale) override
+	{
+		Super::UpdateFireRate(HasteScale);
+		LaserTraceDuration = GetFireRate() * 0.8f;
+	}
 
 protected:
 	virtual void FireProjectile() override;
@@ -65,8 +76,8 @@ private:
     TMap<AActor*, float> ActorDamageTimestamps;
 
 	float FireTime;
-	const float LaserTraceDuration = 4.0f;
-    const float LaserTraceInterval = 0.1f;
+	float LaserTraceDuration = 3.2f;
+    const float LaserTraceInterval = 0.08f;
 
 	// ====================== 기본 구성 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "Components")

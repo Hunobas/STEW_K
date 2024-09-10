@@ -3,7 +3,6 @@
 #include "Components/SceneComponent.h"
 #include "Components/WidgetComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "MainweaponProjectile.h"
@@ -70,7 +69,6 @@ void AEarthMainWeapon::WeaponLevelUp(const int32& NewCurrentWeaponLevel)
         case 7:
             bReleasePositronRifle = true;
             SetFireRate(LaserRate_LV7);
-            FireProjectile();
             break;
         default:
             break;
@@ -132,7 +130,7 @@ AMainweaponProjectile* AEarthMainWeapon::SpawnProjectileAtPointOrNull(USceneComp
 
 void AEarthMainWeapon::FirePositronRifle()
 {
-    UNiagaraComponent* LaserEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(
+    UNiagaraFunctionLibrary::SpawnSystemAttached(
         LaserTemplate,
         ProjectileSpawnPoint,
         NAME_None,
@@ -155,7 +153,7 @@ void AEarthMainWeapon::PerformLaserTrace()
     FVector TraceStart = ProjectileSpawnPoint->GetComponentLocation();
     FVector TraceEnd = TraceStart + ProjectileSpawnPoint->GetForwardVector() * MaxRange_LV7;
     
-    float SphereRadius = 75.0f;
+    float SphereRadius = 45.0f;
     FCollisionShape SphereShape = FCollisionShape::MakeSphere(SphereRadius);
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(this);
@@ -167,6 +165,13 @@ void AEarthMainWeapon::PerformLaserTrace()
     for (const FHitResult& Hit : HitResults)
     {
         if (ValidHits >= 1 + GetAdditionalPenetration()) break;
+
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            LaserHitTemplate,
+            Hit.ImpactPoint,
+            Hit.ImpactNormal.Rotation()
+        );
 
         AActor* HitActor = Hit.GetActor();
         if (FireTime && HitActor && !TracedActors.Contains(HitActor))
@@ -180,13 +185,6 @@ void AEarthMainWeapon::PerformLaserTrace()
                 HealthBarWidget->SetHiddenInGame(false);
             }
 
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                GetWorld(),
-                LaserHitTemplate,
-                Hit.ImpactPoint,
-                Hit.ImpactNormal.Rotation()
-            );
-
             float CurrentTime = GetWorld()->GetTimeSeconds();
             // 아직 안 맞았거나 맞은 뒤 LaserTraceDuration / MaxHitInOneCycle_LV7 초가 흐르면 데미지 적용
             if (!ActorDamageTimestamps.Contains(HitActor) || CurrentTime - ActorDamageTimestamps[HitActor] >= (LaserTraceDuration / MaxHitInOneCycle_LV7))
@@ -197,6 +195,7 @@ void AEarthMainWeapon::PerformLaserTrace()
                 FTimerHandle DamageTimerHandle;
                 // 데미지 적용 예약
                 GetWorldTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateUObject(this, &AEarthMainWeapon::ApplyLaserDamage, HitActor), LaserDamageDelay, false);
+                // ApplyLaserDamage(HitActor);
             }
         }
     }
