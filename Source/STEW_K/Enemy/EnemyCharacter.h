@@ -6,6 +6,7 @@
 
 #include "EnemyCharacter.generated.h"
 
+class UCapsuleComponent;
 class USceneComponent;
 class UHealthComponent;
 class APlanetPawn;
@@ -48,6 +49,8 @@ public:
 	void SetSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
 
 protected:
+    UPROPERTY(EditDefaultsOnly, Category = "Components")
+    UCapsuleComponent* CapsuleComp;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* AimPoint;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

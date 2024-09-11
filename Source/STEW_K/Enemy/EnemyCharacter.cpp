@@ -1,4 +1,5 @@
 // EnemyCharacter.cpp
+#include "Components/CapsuleComponent.h"
 #include "Components/SceneComponent.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,11 +14,13 @@
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collider"));
+    RootComponent = CapsuleComp;
+
     AimPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Aim Point"));
-    AimPoint->SetupAttachment(RootComponent);
+    AimPoint->SetupAttachment(CapsuleComp);
 
 	AutoPossessAI = EAutoPossessAI::Spawned;
 }

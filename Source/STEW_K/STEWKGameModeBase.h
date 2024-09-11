@@ -8,6 +8,7 @@
 
 class AEnemyCharacter;
 class APlanetPawn;
+class ACelestialBody;
 class AXPGem;
 class URewardSelectionService;
 
@@ -46,6 +47,7 @@ public:
 	float GetSpeedScale() const { return SpeedScale; }
 
 private:
+    // ====================== 몬스터 =============================
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<AEnemyCharacter> ZacoBomb;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
@@ -75,7 +77,7 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     int32 ZacoBeam_SpawnNumber = 1;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
-    float ZacoBeam_SpawnInterval = 7.f;
+    float ZacoBeam_SpawnInterval = 40.f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "몬스터", meta = (AllowPrivateAccess = "true"))
     float ZacoBeam_IncreaseDifficultyInterval = 60.f;
 
@@ -93,6 +95,7 @@ private:
 	float DamageScale = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "몬스터")
 	float SpeedScale = 1.f;
+    // ========================================================
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "XP", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<AXPGem> XPGem;
@@ -104,6 +107,11 @@ private:
     UPROPERTY()
     URewardSelectionService* RewardSelectionService;
 
+    UPROPERTY(EditDefaultsOnly, Category = "클래스")
+    TSubclassOf<ACelestialBody> CelestialBodyClass;
+    UPROPERTY()
+    ACelestialBody* CelestialBody;
+
     FTimerHandle GameTimerHandle;
     int32 CurrentEnemyCount = 0;
     int32 CurrentXpGemCount = 0;
@@ -111,14 +119,17 @@ private:
     APlanetPawn* PlayerPawn;
 
     void StartGame();
-    void SpawnEnemies(TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber);
     void SpawnXpGem(AEnemyCharacter* DestroyedEnemy);
     void EndGame();
+    void SpawnEnemies(TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber);
+    void SpawnZacoBeam();
+    void OnZacoBeamDestroyed(AActor* DestroyedActor);
 
     typedef void (ASTEWKGameModeBase::*SpawnFunctionPtr)();
     void IncreaseDifficulty(FTimerHandle* SpawnTimerHandle, float* SpawnInterval, TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber);
 
     FVector GetRandomSpawnLocation() const;
     void InitializeRewardSelectionService();
+    void InitializeCelestialBody();
 
 };

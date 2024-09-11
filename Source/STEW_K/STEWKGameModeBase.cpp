@@ -6,6 +6,7 @@
 #include "Enemy/EnemyCharacter.h"
 #include "Reward/RewardSelectionService.h"
 #include "XPGem.h"
+#include "CelestialBody.h"
 
 #include "STEWKGameModeBase.h"
 
@@ -29,6 +30,7 @@ void ASTEWKGameModeBase::BeginPlay()
     GetWorldTimerManager().SetTimer(StartDelayHandle, this, &ASTEWKGameModeBase::StartGame, StartDelay, false);
 
     InitializeRewardSelectionService();
+    InitializeCelestialBody();
 }
 
 void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
@@ -49,6 +51,10 @@ void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
         {
             SpawnXpGem(DestroyedEnemy);
         }
+        if (DestroyedEnemy->IsA(ZacoBeam))
+        {
+            OnZacoBeamDestroyed(DestroyedEnemy);
+        }
         DestroyedEnemy->HandleDestruction();
     }
 }
@@ -66,15 +72,16 @@ void ASTEWKGameModeBase::StartGame()
         true
     );
     GetWorldTimerManager().SetTimer(
-        ZacoBeam_SpawnTimerHandle,
-        FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoBeam, &ZacoBeam_SpawnNumber),
-        ZacoBeam_SpawnInterval,
-        true
-    );
-    GetWorldTimerManager().SetTimer(
         ZacoSwarm_SpawnTimerHandle,
         FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoSwarm, &ZacoSwarm_SpawnNumber),
         ZacoSwarm_SpawnInterval,
+        true
+    );
+    GetWorldTimerManager().SetTimer(
+        ZacoBeam_SpawnTimerHandle,
+        this,
+        &ASTEWKGameModeBase::SpawnZacoBeam,
+        ZacoBeam_SpawnInterval,
         true
     );
 
@@ -151,6 +158,40 @@ void ASTEWKGameModeBase::SpawnEnemies(TSubclassOf<AEnemyCharacter> EnemyClass, i
     }
 }
 
+void ASTEWKGameModeBase::SpawnZacoBeam()
+{
+    if (CurrentEnemyCount >= MaxEnemies || !ZacoBeam || !CelestialBody) return;
+
+    USceneComponent* SpawnPoint = CelestialBody->GetRandomActiveAimPointOrNull();
+    if (!SpawnPoint) return;
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    AEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(ZacoBeam, SpawnPoint->GetComponentLocation(), SpawnPoint->GetComponentRotation(), SpawnParams);
+    if (SpawnedEnemy)
+    {
+        CurrentEnemyCount++;
+        CelestialBody->MarkAimPointAsOccupied(SpawnPoint);
+        SpawnedEnemy->AttachToComponent(SpawnPoint, FAttachmentTransformRules::KeepWorldTransform);
+    }
+}
+
+void ASTEWKGameModeBase::OnZacoBeamDestroyed(AActor* DestroyedActor)
+{
+    AEnemyCharacter* DestroyedEnemy = Cast<AEnemyCharacter>(DestroyedActor);
+    if (!DestroyedEnemy || !CelestialBody) return;
+
+    USceneComponent* AttachParent = Cast<USceneComponent>(DestroyedEnemy->GetAttachParentActor());
+    if (AttachParent)
+    {
+        if (CelestialBody)
+        {
+            CelestialBody->MarkAimPointAsFree(AttachParent);
+        }
+    }
+}
+
 // void ASTEWKGameModeBase::IncreaseDifficulty(FTimerHandle* SpawnTimerHandle, float* SpawnInterval, TSubclassOf<AEnemyCharacter> EnemyClass, int32* EnemySpawnNumber)
 // {
 //     if (SpawnTimerHandle && SpawnInterval)
@@ -196,5 +237,24 @@ void ASTEWKGameModeBase::InitializeRewardSelectionService()
     else
     {
         UE_LOG(LogTemp, Error, TEXT("RewardSelectionServiceClass is not set in GameMode"));
+    }
+}
+
+void ASTEWKGameModeBase::InitializeCelestialBody()
+{
+    if (CelestialBodyClass)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        CelestialBody = GetWorld()->SpawnActor<ACelestialBody>(CelestialBodyClass, PlayerPawn->GetActorLocation(), FRotator(0.f, 6.f, 0.f), SpawnParams);
+
+        if (!CelestialBody)
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to create CelestialBody"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("CelestialBodyClass is not set in GameMode"));
     }
 }

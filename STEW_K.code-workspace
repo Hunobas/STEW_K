@@ -50,7 +50,8 @@
 			"xlocinfo": "cpp",
 			"xstring": "cpp",
 			"xtree": "cpp",
-			"xutility": "cpp"
+			"xutility": "cpp",
+			"random": "cpp"
 		}
 	},
 	"extensions": {

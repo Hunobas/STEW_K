@@ -85,8 +85,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* ProjectileSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	USceneComponent* SpawnPointDrum;
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* LeftSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* RightSpawnPoint;

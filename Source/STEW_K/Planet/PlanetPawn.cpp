@@ -75,17 +75,16 @@ void APlanetPawn::Tick(float DeltaTime)
 // Called to bind functionality to input
 void APlanetPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look);
-		EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Triggered, this, &APlanetPawn::TriggerSnappedLook);
-		EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Completed, this, &APlanetPawn::UntriggerSnappedLook);
-		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &APlanetPawn::StartAim);
+    if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        LookActionHandle = EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look).GetHandle();
+        EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Triggered, this, &APlanetPawn::TriggerSnappedLook);
+        EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Completed, this, &APlanetPawn::UntriggerSnappedLook);
+        EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &APlanetPawn::StartAim);
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &APlanetPawn::StopAim);
-	}
-
+    }
 }
 
 void APlanetPawn::GainExperience(float XP)
@@ -107,6 +106,51 @@ void APlanetPawn::LevelUp()
     {
         PC->ShowRewardSelection();
     }
+}
+
+void APlanetPawn::SucceedJustAim(const FHitResult& HitResult)
+{
+    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+        GetWorld(),
+        JustAimTemplate,
+        HitResult.ImpactPoint,
+        HitResult.ImpactNormal.Rotation()
+    );
+    
+    UGameplayStatics::PlaySoundAtLocation(
+        this,
+        JustAimSound,
+        GetActorLocation()
+    );
+
+    // 카메라를 HitResult의 액터 위치로 고정
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        AActor* HitActor = HitResult.GetActor();
+        if (HitActor)
+        {
+            FVector CameraLookAtDirection = HitActor->GetActorLocation() - GetActorLocation();
+            FRotator NewRotation = CameraLookAtDirection.Rotation();
+            PC->SetControlRotation(NewRotation);
+        }
+    }
+
+    // Look 액션 비활성화
+    bIsJustAiming = true;
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PC->InputComponent))
+        {
+            EIC->RemoveBindingByHandle(LookActionHandle);
+        }
+    }
+
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), JustAimTimeDilation);
+
+    // ArmLength 조정 시작
+    JustAimElapsedTime = 0.0f;
+    GetWorldTimerManager().SetTimer(JustAimTimerHandle, this, &APlanetPawn::EndJustAimEffect, JustAimDuration, false);
+    GetWorldTimerManager().SetTimerForNextTick(this, &APlanetPawn::UpdateJustAimArmLength);
 }
 
 void APlanetPawn::HandleDestruction()
@@ -258,14 +302,15 @@ void APlanetPawn::SnappedLook(const FInputActionValue& Value)
 
 	if (FMath::Abs(LookAxisValue.X) > SnapThreshold)
 	{
-		SnappedRotation.Yaw += FMath::Sign(LookAxisValue.X) * SnapAngle * 3 / 2;	// 22.5도 간격
+		SnappedRotation.Yaw += FMath::Sign(LookAxisValue.X) * SnapAngle;	// 30도 간격
+	    GetController()->SetControlRotation(SnappedRotation);
 	}
-	if (FMath::Abs(LookAxisValue.Y) > SnapThreshold)
+	if (FMath::Abs(LookAxisValue.Y) > SnapThreshold * 0.9)
 	{
-		SnappedRotation.Pitch -= FMath::Sign(LookAxisValue.Y) * SnapAngle;			// 15도 간격
+		SnappedRotation.Pitch -= FMath::Sign(LookAxisValue.Y) * SnapAngle;			// 30도 간격
+	    GetController()->SetControlRotation(SnappedRotation);
 	}
 
-	GetController()->SetControlRotation(SnappedRotation);
 	LastSnappedLookTime = GetWorld()->GetTimeSeconds();
 }
 
@@ -303,6 +348,55 @@ void APlanetPawn::UpdateArmLength(float DeltaTime)
 	float TargetArmLength = bIsAiming ? AimArmLength : DefaultArmLength;
     CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime, ArmLengthInterpSpeed);
     SpringArm->TargetArmLength = CurrentArmLength;
+}
+
+void APlanetPawn::UpdateJustAimArmLength()
+{
+    if (bIsJustAiming)
+    {
+        float DeltaTime = GetWorld()->GetDeltaSeconds();
+        float CurrentTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+        
+        JustAimElapsedTime += DeltaTime / CurrentTimeDilation;
+        
+        if (JustAimElapsedTime < JustAimZoomDuration)
+        {
+            // 초기 줌 인 단계
+            float Alpha = JustAimElapsedTime / JustAimZoomDuration;
+            CurrentArmLength = FMath::Lerp(CurrentArmLength, AimArmLength, Alpha);
+        }
+        else
+        {
+            // 줌 아웃 및 시간 복구 단계
+            float TargetArmLength = bIsAiming ? AimArmLength : DefaultArmLength;
+            CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime / CurrentTimeDilation, ArmLengthInterpSpeed);
+            
+            // 시간 흐름을 서서히 정상화
+            float NewTimeDilation = FMath::FInterpTo(CurrentTimeDilation, 1.0f, DeltaTime, 0.5f);
+            UGameplayStatics::SetGlobalTimeDilation(GetWorld(), NewTimeDilation);
+        }
+        
+        SpringArm->TargetArmLength = CurrentArmLength;
+        
+        // 다음 프레임에 다시 호출
+        GetWorldTimerManager().SetTimerForNextTick(this, &APlanetPawn::UpdateJustAimArmLength);
+    }
+}
+
+void APlanetPawn::EndJustAimEffect()
+{
+    bIsJustAiming = false;
+    
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+    
+    // Look 액션 다시 활성화
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PC->InputComponent))
+        {
+            LookActionHandle = EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look).GetHandle();
+        }
+    }
 }
 
 void APlanetPawn::UpdateOrbitParameters()

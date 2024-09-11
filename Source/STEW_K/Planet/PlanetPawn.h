@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
 
@@ -48,6 +49,7 @@ public:
 
 	void GainExperience(float XP);
     void LevelUp();
+	void SucceedJustAim(const FHitResult& HitResult);
 	void HandleDestruction();
 
 	// ====================== 게터 =============================
@@ -75,6 +77,14 @@ public:
 
 	AWeaponPawn* GetMainWeapon() const { return MainWeapon; }
 
+	FVector GetSweepStartLocation() const { return MainWeaponSocket->GetComponentLocation(); }
+	FVector GetSweepEndLocation() const 
+	{ 
+		FVector StartLocation = MainWeaponSocket->GetComponentLocation();
+		FVector Direction = MainWeaponSocket->GetComponentRotation().Vector();
+		return StartLocation + (Direction * 2000.0f);
+	}
+
 	// ====================== 세터 =============================
 	void SetAdditionalHealth(const int32& NewAdditionalHealth);
 	void SetDamageScale(const float& NewDamageScale);
@@ -100,17 +110,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
     float RotationRate;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-    float SnapAngle = 15.0f;
+    float SnapAngle = 30.0f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
     float SnapThreshold = 0.8f;
 	UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
-    float SnappedLookCooldown = 0.05f;
+    float SnappedLookCooldown = 0.1f;
 	UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
     float DefaultArmLength = 640.0f;
     UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
     float AimArmLength = 240.0f;
     UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
     float ArmLengthInterpSpeed = 5.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+    float JustAimDuration = 1.5f;
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float JustAimZoomDuration = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+    float JustAimTimeDilation = 0.5f;
 
 private:
 	void ComposeBaseSubobject();
@@ -124,6 +140,9 @@ private:
 	void StartAim();
     void StopAim();
 	void UpdateArmLength(float DeltaTime);
+
+    void UpdateJustAimArmLength();
+    void EndJustAimEffect();
 
 	void UpdateOrbitParameters();
 	void RunOrbit(const float& DeltaTime);
@@ -195,11 +214,16 @@ private:
 	// ============================================================
 
 	// 카메라 스냅 룩, 카메라 에임
+	uint32 LookActionHandle;
 	float LastSnappedLookTime;
 	bool bIsSnapLookTriggered;
     FRotator SnappedRotation;
 	float CurrentArmLength;
 	bool bIsAiming;
+	// 전투 시 저스트 에임
+	FTimerHandle JustAimTimerHandle;
+	float JustAimElapsedTime;
+    bool bIsJustAiming;
 
 	// 행성 공전 메커니즘
 	float OrbitRadius;
@@ -225,6 +249,10 @@ private:
 	float ExpSpeedScale = 1.5f;
 
 	// ====================== 이펙트 =============================
+	UPROPERTY(EditAnywhere, Category = "이펙트")
+    UNiagaraSystem* JustAimTemplate;
+	UPROPERTY(EditAnywhere, Category = "이펙트")
+    USoundBase* JustAimSound;
 	UPROPERTY(EditDefaultsOnly, Category = "이펙트")
     UNiagaraSystem* DestructionTemplate;
     UPROPERTY(EditDefaultsOnly, Category = "이펙트")

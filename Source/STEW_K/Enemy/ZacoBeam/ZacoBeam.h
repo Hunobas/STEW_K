@@ -8,6 +8,7 @@
 class USceneComponent;
 class UNiagaraSystem;
 class USoundBase;
+class APlanetPawn;
 
 /**
  * 
@@ -20,14 +21,25 @@ class STEW_K_API AZacoBeam : public AEnemyCharacter
 public:
 	AZacoBeam();
 
+	virtual void Tick(float DeltaTime) override;
 	virtual void Shoot() override;
 
 protected:
     virtual void BeginPlay() override;
 	
 private:
+	const FHitResult* GetPlayerAimHitResult() const;
+
+    APlanetPawn* PlayerPawn;
+
+    FTimerHandle FireTimerHandle;
+
 	// ====================== 수치 기획 =============================
-    UPROPERTY(EditAnywhere, Category = "적")
-    float Damage = 8.0f;
+    UPROPERTY(EditDefaultsOnly, Category = "적")
+    float Damage = 8.f;
+    UPROPERTY(EditDefaultsOnly, Category = "적")
+    float FireRate = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category = "적")
+    float JustAimAcceptableRadius = 250.f;
 
 };

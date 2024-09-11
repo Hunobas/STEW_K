@@ -20,20 +20,17 @@ AEarthMainWeapon::AEarthMainWeapon()
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(WeaponMesh);
 
-    SpawnPointDrum = CreateDefaultSubobject<USceneComponent>(TEXT("Spawn Point Drum"));
-	SpawnPointDrum->SetupAttachment(WeaponMesh);
-
     LeftSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Left Spawn Point"));
-	LeftSpawnPoint->SetupAttachment(SpawnPointDrum);
+	LeftSpawnPoint->SetupAttachment(ProjectileSpawnPoint);
 
     RightSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Right Spawn Point"));
-	RightSpawnPoint->SetupAttachment(SpawnPointDrum);
+	RightSpawnPoint->SetupAttachment(ProjectileSpawnPoint);
 
     UpperSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Upper Spawn Point"));
-	UpperSpawnPoint->SetupAttachment(SpawnPointDrum);
+	UpperSpawnPoint->SetupAttachment(ProjectileSpawnPoint);
 
     LowerSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Lower Spawn Point"));
-	LowerSpawnPoint->SetupAttachment(SpawnPointDrum);
+	LowerSpawnPoint->SetupAttachment(ProjectileSpawnPoint);
 
 }
 

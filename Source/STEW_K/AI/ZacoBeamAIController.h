@@ -34,4 +34,6 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "적")
     float Speed = 200.0f;
 
+    FTimerHandle FireTimerHandle;
+
 };

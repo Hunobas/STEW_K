@@ -21,14 +21,21 @@ void AZacoBeamAIController::OnPossess(APawn* InPawn)
     {
         Speed *= EnemyPawn->GetSpeedScale();
     }
-    if (ZacoBeamAIBehavior)
-    {
-        RunBehaviorTree(ZacoBeamAIBehavior);
-    }
+    // if (ZacoBeamAIBehavior)
+    // {
+    //     RunBehaviorTree(ZacoBeamAIBehavior);
+    // }
 }
 
 void AZacoBeamAIController::Tick(float DeltaTime)
 {
-    APlanetPawn* PlayerPawn = Cast<APlanetPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-    GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
+    // APlanetPawn* PlayerPawn = Cast<APlanetPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+    // GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
+    AEnemyCharacter* EnemyPawn = Cast<AEnemyCharacter>(GetPawn());
+    if (EnemyPawn)
+    {
+        FVector CurrentLocation = EnemyPawn->GetActorLocation();
+        FVector NewLocation = CurrentLocation + FVector(0, 0, FMath::Sin(DeltaTime) * 5.f);
+        EnemyPawn->SetActorLocation(NewLocation, true);
+    }
 }
