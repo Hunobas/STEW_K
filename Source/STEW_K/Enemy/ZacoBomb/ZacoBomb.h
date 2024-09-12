@@ -26,7 +26,7 @@ protected:
     virtual void OnPawnCollision(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-    void ExplodeAndDamagePlayer(APlanetPawn* PlayerPawn);
+    void ExplodeAndDamagePlayer();
 
 	// ====================== 수치 기획 =============================
     UPROPERTY(EditAnywhere, Category = "적")

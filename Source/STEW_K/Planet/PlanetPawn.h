@@ -50,6 +50,8 @@ public:
 	void GainExperience(float XP);
     void LevelUp();
 	void SucceedJustAim(const FHitResult& HitResult);
+	void BlockPlayerInput();
+    void UnblockPlayerInput();
 	void HandleDestruction();
 
 	// ====================== 게터 =============================
@@ -99,6 +101,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* PlayerMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputMappingContext* PlayerInputBlock;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* MouseLeftAction;
@@ -122,9 +126,9 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
     float ArmLengthInterpSpeed = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimDuration = 1.5f;
+    float JustAimDuration = 0.7f;
     UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimZoomDuration = 0.5f;
+    float JustAimZoomDuration = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Camera")
     float JustAimTimeDilation = 0.5f;
 
@@ -213,11 +217,11 @@ private:
 
 	// ============================================================
 
-	// 카메라 스냅 룩, 카메라 에임
-	uint32 LookActionHandle;
+	// 카메라 스냅 룩
 	float LastSnappedLookTime;
-	bool bIsSnapLookTriggered;
+	bool bIsSnapLook;
     FRotator SnappedRotation;
+	// 카메라 에임
 	float CurrentArmLength;
 	bool bIsAiming;
 	// 전투 시 저스트 에임

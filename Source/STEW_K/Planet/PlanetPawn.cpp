@@ -30,7 +30,7 @@ APlanetPawn::APlanetPawn()
 
 	SpringArm->TargetArmLength = CurrentArmLength = DefaultArmLength;
 	bIsAiming = false;
-	bIsSnapLookTriggered = false;
+	bIsSnapLook = false;
 
 }
 
@@ -79,7 +79,7 @@ void APlanetPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
     if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
     {
-        LookActionHandle = EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look).GetHandle();
+        EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look);
         EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Triggered, this, &APlanetPawn::TriggerSnappedLook);
         EnhancedInputComponent->BindAction(MouseLeftAction, ETriggerEvent::Completed, this, &APlanetPawn::UntriggerSnappedLook);
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &APlanetPawn::StartAim);
@@ -137,13 +137,7 @@ void APlanetPawn::SucceedJustAim(const FHitResult& HitResult)
 
     // Look 액션 비활성화
     bIsJustAiming = true;
-    if (APlayerController* PC = Cast<APlayerController>(GetController()))
-    {
-        if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PC->InputComponent))
-        {
-            EIC->RemoveBindingByHandle(LookActionHandle);
-        }
-    }
+    BlockPlayerInput();
 
     UGameplayStatics::SetGlobalTimeDilation(GetWorld(), JustAimTimeDilation);
 
@@ -151,6 +145,31 @@ void APlanetPawn::SucceedJustAim(const FHitResult& HitResult)
     JustAimElapsedTime = 0.0f;
     GetWorldTimerManager().SetTimer(JustAimTimerHandle, this, &APlanetPawn::EndJustAimEffect, JustAimDuration, false);
     GetWorldTimerManager().SetTimerForNextTick(this, &APlanetPawn::UpdateJustAimArmLength);
+}
+
+void APlanetPawn::BlockPlayerInput()
+{
+    if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+        {
+            Subsystem->AddMappingContext(PlayerInputBlock, 1);
+            UE_LOG(LogTemp, Warning, TEXT("Player input blocked"));
+        }
+    }
+}
+
+void APlanetPawn::UnblockPlayerInput()
+{
+    if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+        {
+            Subsystem->RemoveMappingContext(PlayerInputBlock);
+            UE_LOG(LogTemp, Warning, TEXT("Player input unblocked"));
+            bIsSnapLook = bIsAiming = false;
+        }
+    }
 }
 
 void APlanetPawn::HandleDestruction()
@@ -272,7 +291,7 @@ void APlanetPawn::Look(const FInputActionValue& Value)
 {
     if (GetController())
     {
-        if (bIsSnapLookTriggered)
+        if (bIsSnapLook)
         {
             SnappedLook(Value);
         }
@@ -316,13 +335,13 @@ void APlanetPawn::SnappedLook(const FInputActionValue& Value)
 
 void APlanetPawn::TriggerSnappedLook()
 {
-	bIsSnapLookTriggered = true;
+	bIsSnapLook = true;
 	SpringArm->bEnableCameraRotationLag = true;
 }
 
 void APlanetPawn::UntriggerSnappedLook()
 {
-	bIsSnapLookTriggered = false;
+	bIsSnapLook = false;
 	SpringArm->bEnableCameraRotationLag = false;
 }
 
@@ -369,7 +388,7 @@ void APlanetPawn::UpdateJustAimArmLength()
         {
             // 줌 아웃 및 시간 복구 단계
             float TargetArmLength = bIsAiming ? AimArmLength : DefaultArmLength;
-            CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime / CurrentTimeDilation, ArmLengthInterpSpeed);
+            CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime / CurrentTimeDilation, ArmLengthInterpSpeed * 0.3f);
             
             // 시간 흐름을 서서히 정상화
             float NewTimeDilation = FMath::FInterpTo(CurrentTimeDilation, 1.0f, DeltaTime, 0.5f);
@@ -388,15 +407,7 @@ void APlanetPawn::EndJustAimEffect()
     bIsJustAiming = false;
     
     UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
-    
-    // Look 액션 다시 활성화
-    if (APlayerController* PC = Cast<APlayerController>(GetController()))
-    {
-        if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PC->InputComponent))
-        {
-            LookActionHandle = EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetPawn::Look).GetHandle();
-        }
-    }
+    UnblockPlayerInput();
 }
 
 void APlanetPawn::UpdateOrbitParameters()

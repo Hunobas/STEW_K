@@ -1,6 +1,8 @@
 // EnemyCharacter.cpp
 #include "Components/CapsuleComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
@@ -19,8 +21,11 @@ AEnemyCharacter::AEnemyCharacter()
     CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collider"));
     RootComponent = CapsuleComp;
 
+    EnemyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Enemy Mesh"));
+	EnemyMesh->SetupAttachment(CapsuleComp);
+
     AimPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Aim Point"));
-    AimPoint->SetupAttachment(CapsuleComp);
+    AimPoint->SetupAttachment(EnemyMesh);
 
 	AutoPossessAI = EAutoPossessAI::Spawned;
 }
@@ -43,6 +48,7 @@ void AEnemyCharacter::BeginPlay()
         SetDamageScale(GameMode->GetDamageScale());
         SetSpeedScale(GameMode->GetSpeedScale());
 	}
+    PlayerPawn = Cast<APlanetPawn>(UGameplayStatics::GetPlayerPawn(this, 0));
 	HealthComponent = FindComponentByClass<UHealthComponent>();
 }
 
@@ -50,6 +56,19 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    if (PlayerPawn && bIsInJustAimWindow)
+    {
+        const FHitResult* HitResult = GetPlayerAimHitResult();
+        if (HitResult)
+        {
+            FDamageEvent DamageEvent;
+            TakeDamage(40.0f, DamageEvent, GetController(), this);
+            PlayerPawn->SucceedJustAim(*HitResult);
+            
+            GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+            bIsInJustAimWindow = false;
+        }
+    }
 }
 
 float AEnemyCharacter::GetHealthPercentage() const
@@ -63,18 +82,37 @@ float AEnemyCharacter::GetHealthPercentage() const
 
 void AEnemyCharacter::ReadyToShoot()
 {
-	UNiagaraFunctionLibrary::SpawnSystemAttached(
+    UNiagaraFunctionLibrary::SpawnSystemAttached(
         JustAimTemplate,
         AimPoint,
         NAME_None,
         FVector::ZeroVector,
-        AimPoint->GetComponentRotation(),
+        FRotator::ZeroRotator,
         EAttachLocation::SnapToTarget,
         true
     );
 
-	FTimerHandle ShootTimerHandle;
-	GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &AEnemyCharacter::Shoot, JustAim, false);
+    GetWorldTimerManager().SetTimer(JustAimWindowTimerHandle, this, &AEnemyCharacter::StartJustAimWindow, JustAimDelay, false);
+    GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &AEnemyCharacter::ExecuteShoot, ShootDelay, false);
+}
+
+void AEnemyCharacter::StartJustAimWindow()
+{
+    bIsInJustAimWindow = true;
+    GetWorldTimerManager().SetTimer(JustAimWindowTimerHandle, this, &AEnemyCharacter::EndJustAimWindow, ShootDelay - JustAimDelay - 0.01f, false);
+}
+
+void AEnemyCharacter::EndJustAimWindow()
+{
+    bIsInJustAimWindow = false;
+}
+
+void AEnemyCharacter::ExecuteShoot()
+{
+    if (!bIsInJustAimWindow)
+    {
+        Shoot();
+    }
 }
 
 void AEnemyCharacter::Shoot()
@@ -93,6 +131,42 @@ void AEnemyCharacter::Shoot()
         ShotSound,
         AimPoint->GetComponentLocation()
     );
+}
+
+const FHitResult* AEnemyCharacter::GetPlayerAimHitResult() const
+{
+    if (!PlayerPawn)
+    {
+        return nullptr;
+    }
+
+    FCollisionShape SweepShape = FCollisionShape::MakeSphere(JustAimAcceptableRadius);
+
+    FVector SweepStart = PlayerPawn->GetSweepStartLocation();
+    FVector SweepEnd = PlayerPawn->GetSweepEndLocation();
+
+    TArray<FHitResult> HitResults;
+    bool bHit = GetWorld()->SweepMultiByChannel(
+        HitResults,
+        SweepStart,
+        SweepEnd,
+        FQuat::Identity,
+        ECC_GameTraceChannel4,
+        SweepShape
+    );
+
+    if (bHit)
+    {
+        for (const FHitResult& Hit : HitResults)
+        {
+            if (Hit.GetActor() == this)
+            {
+                return &Hit;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 void AEnemyCharacter::HandleDestruction()

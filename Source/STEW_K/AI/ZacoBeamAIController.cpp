@@ -20,6 +20,7 @@ void AZacoBeamAIController::OnPossess(APawn* InPawn)
     if (AEnemyCharacter* EnemyPawn = Cast<AEnemyCharacter>(InPawn))
     {
         Speed *= EnemyPawn->GetSpeedScale();
+        EnemyPawn->ReadyToShoot();
     }
     // if (ZacoBeamAIBehavior)
     // {
@@ -35,7 +36,7 @@ void AZacoBeamAIController::Tick(float DeltaTime)
     if (EnemyPawn)
     {
         FVector CurrentLocation = EnemyPawn->GetActorLocation();
-        FVector NewLocation = CurrentLocation + FVector(0, 0, FMath::Sin(DeltaTime) * 5.f);
+        FVector NewLocation = CurrentLocation + FVector(0, 0, FMath::Sin(GetWorld()->GetTimeSeconds() * 2) * 0.1f);
         EnemyPawn->SetActorLocation(NewLocation, true);
     }
 }

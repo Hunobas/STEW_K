@@ -7,6 +7,7 @@
 #include "EnemyCharacter.generated.h"
 
 class UCapsuleComponent;
+class UStaticMeshComponent;
 class USceneComponent;
 class UHealthComponent;
 class APlanetPawn;
@@ -30,14 +31,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Health")
-    float GetHealthPercentage() const;
-
 	void ReadyToShoot();
 	virtual void Shoot();
 	void HandleDestruction();
 
 	// ====================== 게터 =============================
+	UFUNCTION(BlueprintCallable, Category = "Health")
+    float GetHealthPercentage() const;
+	
 	float GetHealthScale() const { return HealthScale; }
 	float GetDamageScale() const { return DamageScale; }
 	float GetSpeedScale() const { return SpeedScale; }
@@ -49,8 +50,15 @@ public:
 	void SetSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
 
 protected:
+    void StartJustAimWindow();
+    void EndJustAimWindow();
+    virtual void ExecuteShoot();
+	const FHitResult* GetPlayerAimHitResult() const;
+
     UPROPERTY(EditDefaultsOnly, Category = "Components")
     UCapsuleComponent* CapsuleComp;
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UStaticMeshComponent* EnemyMesh;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* AimPoint;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -58,7 +66,9 @@ protected:
 
 	// ====================== 수치 기획 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-	float JustAim = 2.f;
+	float JustAimDelay = 1.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+	float ShootDelay = 2.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float HealthScale = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
@@ -67,6 +77,12 @@ protected:
 	float SpeedScale = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float XPDropScale = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+    float JustAimAcceptableRadius = 250.f;
+	FTimerHandle JustAimWindowTimerHandle;
+    FTimerHandle ShootTimerHandle;
+	bool bIsInJustAimWindow = false;
 
 	// ====================== 이펙트 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "이펙트")
@@ -79,5 +95,7 @@ protected:
     UNiagaraSystem* DestructionTemplate;
     UPROPERTY(EditDefaultsOnly, Category = "이펙트")
     USoundBase* DestructionSound;
+
+    APlanetPawn* PlayerPawn;
 	
 };

@@ -28,10 +28,6 @@ protected:
     virtual void BeginPlay() override;
 	
 private:
-	const FHitResult* GetPlayerAimHitResult() const;
-
-    APlanetPawn* PlayerPawn;
-
     FTimerHandle FireTimerHandle;
 
 	// ====================== 수치 기획 =============================
@@ -39,7 +35,5 @@ private:
     float Damage = 8.f;
     UPROPERTY(EditDefaultsOnly, Category = "적")
     float FireRate = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category = "적")
-    float JustAimAcceptableRadius = 250.f;
 
 };

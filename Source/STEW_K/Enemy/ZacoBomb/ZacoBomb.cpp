@@ -27,13 +27,13 @@ void AZacoBomb::BeginPlay()
 
 void AZacoBomb::OnPawnCollision(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    if (APlanetPawn* PlayerPawn = Cast<APlanetPawn>(OtherActor))
+    if (PlayerPawn && Cast<APlanetPawn>(OtherActor) == PlayerPawn)
     {
-        ExplodeAndDamagePlayer(PlayerPawn);
+        ExplodeAndDamagePlayer();
     }
 }
 
-void AZacoBomb::ExplodeAndDamagePlayer(APlanetPawn* PlayerPawn)
+void AZacoBomb::ExplodeAndDamagePlayer()
 {
     if (PlayerPawn)
     {
