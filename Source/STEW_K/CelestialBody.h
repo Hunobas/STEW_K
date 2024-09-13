@@ -36,6 +36,9 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Components")
     TArray<USceneComponent*> AimPoints;
 
+    UPROPERTY(EditDefaultsOnly, Category = "Components")
+    int32 AimPointsNum = 36;
+
     UPROPERTY()
     APlanetPawn* PlayerPawn;
 

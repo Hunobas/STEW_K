@@ -39,6 +39,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
     float GetHealthPercentage() const;
 	
+	FVector GetAimPointLocation() const { return AimPoint->GetComponentLocation(); }
 	float GetHealthScale() const { return HealthScale; }
 	float GetDamageScale() const { return DamageScale; }
 	float GetSpeedScale() const { return SpeedScale; }
@@ -53,7 +54,9 @@ protected:
     void StartJustAimWindow();
     void EndJustAimWindow();
     virtual void ExecuteShoot();
-	const FHitResult* GetPlayerAimHitResult() const;
+	bool IsPlayerAimToThis() const;
+
+    APlanetPawn* PlayerPawn;
 
     UPROPERTY(EditDefaultsOnly, Category = "Components")
     UCapsuleComponent* CapsuleComp;
@@ -67,6 +70,8 @@ protected:
 	// ====================== 수치 기획 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float JustAimDelay = 1.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+	float JustAimDamage = 40.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float ShootDelay = 2.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
@@ -95,7 +100,5 @@ protected:
     UNiagaraSystem* DestructionTemplate;
     UPROPERTY(EditDefaultsOnly, Category = "이펙트")
     USoundBase* DestructionSound;
-
-    APlanetPawn* PlayerPawn;
 	
 };

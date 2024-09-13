@@ -15,6 +15,7 @@
 #include "PlanetPlayerController.h"
 #include "../Weapon/WeaponPawn.h"
 #include "../HealthComponent.h"
+#include "../Enemy/EnemyCharacter.h"
 
 #include "PlanetPawn.h"
 
@@ -58,6 +59,7 @@ void APlanetPawn::BeginPlay()
 	CurrentLevel = 1;
     CurrentXP = 0;
     CalculateXPToNextLevel();
+    InputAimBuffer.Init(FVector2D::ZeroVector, InputAimBufferSize);
 
     HealthComponent = FindComponentByClass<UHealthComponent>();
 
@@ -108,13 +110,13 @@ void APlanetPawn::LevelUp()
     }
 }
 
-void APlanetPawn::SucceedJustAim(const FHitResult& HitResult)
+void APlanetPawn::SucceedJustAim(AEnemyCharacter* Enemy)
 {
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(
         GetWorld(),
         JustAimTemplate,
-        HitResult.ImpactPoint,
-        HitResult.ImpactNormal.Rotation()
+        Enemy->GetAimPointLocation(),
+        FRotator::ZeroRotator
     );
     
     UGameplayStatics::PlaySoundAtLocation(
@@ -123,13 +125,12 @@ void APlanetPawn::SucceedJustAim(const FHitResult& HitResult)
         GetActorLocation()
     );
 
-    // 카메라를 HitResult의 액터 위치로 고정
+    // 카메라를 Enemy의 액터 위치로 고정
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
-        AActor* HitActor = HitResult.GetActor();
-        if (HitActor)
+        if (Enemy)
         {
-            FVector CameraLookAtDirection = HitActor->GetActorLocation() - GetActorLocation();
+            FVector CameraLookAtDirection = Enemy->GetActorLocation() - GetActorLocation();
             FRotator NewRotation = CameraLookAtDirection.Rotation();
             PC->SetControlRotation(NewRotation);
         }
@@ -297,12 +298,18 @@ void APlanetPawn::Look(const FInputActionValue& Value)
         }
         else
         {
-    		const FVector2D LookAxisValue = Value.Get<FVector2D>();
+            const FVector2D LookAxisValue = Value.Get<FVector2D>();
+            AddInputToBuffer(LookAxisValue);
             AddControllerYawInput(LookAxisValue.X * GetWorld()->GetDeltaSeconds() * RotationRate);
             AddControllerPitchInput(LookAxisValue.Y * GetWorld()->GetDeltaSeconds() * RotationRate);
         }
     }
+}
 
+void APlanetPawn::AddInputToBuffer(const FVector2D& Input)
+{
+    InputAimBuffer[InputAimBufferIndex] = Input;
+    InputAimBufferIndex = (InputAimBufferIndex + 1) % InputAimBufferSize;
 }
 
 void APlanetPawn::SnappedLook(const FInputActionValue& Value)

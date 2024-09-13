@@ -58,12 +58,11 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
     if (PlayerPawn && bIsInJustAimWindow)
     {
-        const FHitResult* HitResult = GetPlayerAimHitResult();
-        if (HitResult)
+        if (IsPlayerAimToThis())
         {
             FDamageEvent DamageEvent;
-            TakeDamage(40.0f, DamageEvent, GetController(), this);
-            PlayerPawn->SucceedJustAim(*HitResult);
+            TakeDamage(JustAimDamage, DamageEvent, GetController(), this);
+            PlayerPawn->SucceedJustAim(this);
             
             GetWorldTimerManager().ClearTimer(ShootTimerHandle);
             bIsInJustAimWindow = false;
@@ -133,40 +132,36 @@ void AEnemyCharacter::Shoot()
     );
 }
 
-const FHitResult* AEnemyCharacter::GetPlayerAimHitResult() const
+bool AEnemyCharacter::IsPlayerAimToThis() const
 {
-    if (!PlayerPawn)
+    FVector DestinationVector = GetActorLocation() - PlayerPawn->GetForwardCelestialVector();
+    FVector2D LastAverageAimInput = PlayerPawn->GetLastAverageAimInput();
+
+    if (DestinationVector.Size() < 500.f)
     {
-        return nullptr;
-    }
-
-    FCollisionShape SweepShape = FCollisionShape::MakeSphere(JustAimAcceptableRadius);
-
-    FVector SweepStart = PlayerPawn->GetSweepStartLocation();
-    FVector SweepEnd = PlayerPawn->GetSweepEndLocation();
-
-    TArray<FHitResult> HitResults;
-    bool bHit = GetWorld()->SweepMultiByChannel(
-        HitResults,
-        SweepStart,
-        SweepEnd,
-        FQuat::Identity,
-        ECC_GameTraceChannel4,
-        SweepShape
-    );
-
-    if (bHit)
-    {
-        for (const FHitResult& Hit : HitResults)
+        if (DestinationVector.X <= 0 && DestinationVector.Y <= 0
+            && LastAverageAimInput.X <= 0 && LastAverageAimInput.Y <= 0)
         {
-            if (Hit.GetActor() == this)
-            {
-                return &Hit;
-            }
+            return true;
+        }
+        else if (DestinationVector.X >= 0 && DestinationVector.Y <= 0
+            && LastAverageAimInput.X >= 0 && LastAverageAimInput.Y <= 0)
+        {
+            return true;
+        }
+        else if (DestinationVector.X >= 0 && DestinationVector.Y >= 0
+            && LastAverageAimInput.X >= 0 && LastAverageAimInput.Y >= 0)
+        {
+            return true;
+        }
+        else if (DestinationVector.X <= 0 && DestinationVector.Y >= 0
+            && LastAverageAimInput.X <= 0 && LastAverageAimInput.Y >= 0)
+        {
+            return true;
         }
     }
 
-    return nullptr;
+    return false;
 }
 
 void AEnemyCharacter::HandleDestruction()

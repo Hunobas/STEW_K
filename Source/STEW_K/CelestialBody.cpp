@@ -17,7 +17,7 @@ ACelestialBody::ACelestialBody()
     CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collider"));
     RootComponent = CapsuleComp;
 
-    for (int32 i = 1; i <= 12; i++)
+    for (int32 i = 1; i <= AimPointsNum; i++)
     {
         FString AimPointName = FString::Printf(TEXT("Aim Point %02d"), i);
         USceneComponent* AimPoint = CreateDefaultSubobject<USceneComponent>(*AimPointName);

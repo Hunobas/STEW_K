@@ -14,6 +14,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
 class UHealthComponent;
+class AEnemyCharacter;
 class UInputMappingContext;
 class UInputAction;
 class UNiagaraSystem;
@@ -49,7 +50,7 @@ public:
 
 	void GainExperience(float XP);
     void LevelUp();
-	void SucceedJustAim(const FHitResult& HitResult);
+	void SucceedJustAim(AEnemyCharacter* Enemy);
 	void BlockPlayerInput();
     void UnblockPlayerInput();
 	void HandleDestruction();
@@ -79,12 +80,15 @@ public:
 
 	AWeaponPawn* GetMainWeapon() const { return MainWeapon; }
 
-	FVector GetSweepStartLocation() const { return MainWeaponSocket->GetComponentLocation(); }
-	FVector GetSweepEndLocation() const 
-	{ 
-		FVector StartLocation = MainWeaponSocket->GetComponentLocation();
-		FVector Direction = MainWeaponSocket->GetComponentRotation().Vector();
-		return StartLocation + (Direction * 2000.0f);
+	FVector GetForwardCelestialVector() const { return MainWeaponSocket->GetComponentLocation() + (MainWeaponSocket->GetComponentRotation()).Vector() * 1000.f; }
+	FVector2D GetLastAverageAimInput() const
+	{
+		FVector2D Sum = FVector2D::ZeroVector;
+		for (const FVector2D& InputAim : InputAimBuffer)
+		{
+			Sum += InputAim;
+		}
+    	return Sum / InputAimBufferSize;
 	}
 
 	// ====================== 세터 =============================
@@ -130,7 +134,7 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Camera")
     float JustAimZoomDuration = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimTimeDilation = 0.5f;
+    float JustAimTimeDilation = 1.f;
 
 private:
 	void ComposeBaseSubobject();
@@ -145,6 +149,7 @@ private:
     void StopAim();
 	void UpdateArmLength(float DeltaTime);
 
+	void AddInputToBuffer(const FVector2D& Input);
     void UpdateJustAimArmLength();
     void EndJustAimEffect();
 
@@ -225,6 +230,9 @@ private:
 	float CurrentArmLength;
 	bool bIsAiming;
 	// 전투 시 저스트 에임
+	TArray<FVector2D> InputAimBuffer;
+	int32 InputAimBufferSize = 10;
+	int32 InputAimBufferIndex = 0;
 	FTimerHandle JustAimTimerHandle;
 	float JustAimElapsedTime;
     bool bIsJustAiming;
