@@ -47,10 +47,10 @@ void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
     else if (AEnemyCharacter* DestroyedEnemy = Cast<AEnemyCharacter>(DeadActor))
     {
         CurrentEnemyCount--;
-        // if (FMath::RandRange(0.f, 1.f) <= DestroyedEnemy->GetXPDropScale())
-        // {
-        //     SpawnXpGem(DestroyedEnemy);
-        // }
+        if (FMath::RandRange(0.f, 1.f) <= DestroyedEnemy->GetXPDropScale())
+        {
+            SpawnXpGem(DestroyedEnemy);
+        }
         if (DestroyedEnemy->IsA(ZacoBeam))
         {
             OnZacoBeamDestroyed(DestroyedEnemy);
@@ -60,60 +60,60 @@ void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
 }
 
 // 게임 모드 1.
-// void ASTEWKGameModeBase::StartGame()
-// {
-//     // 게임 종료 타이머 설정
-//     GetWorldTimerManager().SetTimer(GameTimerHandle, this, &ASTEWKGameModeBase::EndGame, OrbitPeriod, false);
-
-//     // 적 스폰 타이머 설정
-//     GetWorldTimerManager().SetTimer(
-//         ZacoBomb_SpawnTimerHandle,
-//         FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoBomb, &ZacoBomb_SpawnNumber),
-//         ZacoBomb_SpawnInterval,
-//         true
-//     );
-//     GetWorldTimerManager().SetTimer(
-//         ZacoSwarm_SpawnTimerHandle,
-//         FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoSwarm, &ZacoSwarm_SpawnNumber),
-//         ZacoSwarm_SpawnInterval,
-//         true
-//     );
-//     GetWorldTimerManager().SetTimer(
-//         ZacoBeam_SpawnTimerHandle,
-//         this,
-//         &ASTEWKGameModeBase::SpawnZacoBeam,
-//         ZacoBeam_SpawnInterval,
-//         true
-//     );
-
-//     // 난이도 증가 타이머 설정
-//     // GetWorldTimerManager().SetTimer(
-//     //     ZacoBomb_DifficultyTimerHandle,
-//     //     FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::IncreaseDifficulty, &ZacoBomb_SpawnTimerHandle, &ZacoBomb_SpawnInterval, ZacoBomb, &ZacoBomb_SpawnNumber),
-//     //     ZacoBomb_IncreaseDifficultyInterval,
-//     //     true
-//     // );
-//     // GetWorldTimerManager().SetTimer(
-//     //     ZacoSwarm_DifficultyTimerHandle,
-//     //     FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::IncreaseDifficulty, &ZacoSwarm_SpawnTimerHandle, &ZacoSwarm_SpawnInterval, ZacoSwarm, &ZacoSwarm_SpawnNumber),
-//     //     ZacoSwarm_IncreaseDifficultyInterval,
-//     //     true
-//     // );
-// }
-
-// 게임 모드 2.
 void ASTEWKGameModeBase::StartGame()
 {
+    // 게임 종료 타이머 설정
     GetWorldTimerManager().SetTimer(GameTimerHandle, this, &ASTEWKGameModeBase::EndGame, OrbitPeriod, false);
 
+    // 적 스폰 타이머 설정
+    GetWorldTimerManager().SetTimer(
+        ZacoBomb_SpawnTimerHandle,
+        FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoBomb, &ZacoBomb_SpawnNumber),
+        ZacoBomb_SpawnInterval,
+        true
+    );
+    GetWorldTimerManager().SetTimer(
+        ZacoSwarm_SpawnTimerHandle,
+        FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::SpawnEnemies, ZacoSwarm, &ZacoSwarm_SpawnNumber),
+        ZacoSwarm_SpawnInterval,
+        true
+    );
     GetWorldTimerManager().SetTimer(
         ZacoBeam_SpawnTimerHandle,
         this,
         &ASTEWKGameModeBase::SpawnZacoBeam,
-        1,
+        ZacoBeam_SpawnInterval,
         true
     );
+
+    // 난이도 증가 타이머 설정
+    // GetWorldTimerManager().SetTimer(
+    //     ZacoBomb_DifficultyTimerHandle,
+    //     FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::IncreaseDifficulty, &ZacoBomb_SpawnTimerHandle, &ZacoBomb_SpawnInterval, ZacoBomb, &ZacoBomb_SpawnNumber),
+    //     ZacoBomb_IncreaseDifficultyInterval,
+    //     true
+    // );
+    // GetWorldTimerManager().SetTimer(
+    //     ZacoSwarm_DifficultyTimerHandle,
+    //     FTimerDelegate::CreateUObject(this, &ASTEWKGameModeBase::IncreaseDifficulty, &ZacoSwarm_SpawnTimerHandle, &ZacoSwarm_SpawnInterval, ZacoSwarm, &ZacoSwarm_SpawnNumber),
+    //     ZacoSwarm_IncreaseDifficultyInterval,
+    //     true
+    // );
 }
+
+// 게임 모드 2.
+// void ASTEWKGameModeBase::StartGame()
+// {
+//     GetWorldTimerManager().SetTimer(GameTimerHandle, this, &ASTEWKGameModeBase::EndGame, OrbitPeriod, false);
+
+//     GetWorldTimerManager().SetTimer(
+//         ZacoBeam_SpawnTimerHandle,
+//         this,
+//         &ASTEWKGameModeBase::SpawnZacoBeam,
+//         1,
+//         true
+//     );
+// }
 
 void ASTEWKGameModeBase::SpawnXpGem(AEnemyCharacter* DestroyedEnemy)
 {
