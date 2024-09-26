@@ -48,7 +48,6 @@ void AEarthMainWeapon::WeaponLevelUp(const int32& NewCurrentWeaponLevel)
     {
         case 2:
             SetDamageScale(GetDamageScale() + DamageUp_LV2);
-            SetAdditionalPenetration(GetAdditionalPenetration() + 1);
             break;
         case 3:
             bReleaseSideSpawnPoint = true;
@@ -61,7 +60,6 @@ void AEarthMainWeapon::WeaponLevelUp(const int32& NewCurrentWeaponLevel)
             break;
         case 6:
             SetDamageScale(GetDamageScale() + DamageUp_LV6);
-            SetAdditionalPenetration(GetAdditionalPenetration() + 1);
             break;
         case 7:
             bReleasePositronRifle = true;
@@ -155,26 +153,22 @@ void AEarthMainWeapon::PerformLaserTrace()
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(this);
 
-    TArray<FHitResult> HitResults;
-    GetWorld()->SweepMultiByChannel(HitResults, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel2, SphereShape, QueryParams);
+    FHitResult HitResult;
+    bool bHit = GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel2, SphereShape, QueryParams);
 
-    int32 ValidHits = 0;
-    for (const FHitResult& Hit : HitResults)
+    if (bHit)
     {
-        if (ValidHits >= 1 + GetAdditionalPenetration()) break;
-
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(
             GetWorld(),
             LaserHitTemplate,
-            Hit.ImpactPoint,
-            Hit.ImpactNormal.Rotation()
+            HitResult.ImpactPoint,
+            HitResult.ImpactNormal.Rotation()
         );
 
-        AActor* HitActor = Hit.GetActor();
+        AActor* HitActor = HitResult.GetActor();
         if (FireTime && HitActor && !TracedActors.Contains(HitActor))
         {
             TracedActors.Add(HitActor);
-            ValidHits++;
 
             UWidgetComponent* HealthBarWidget = Cast<UWidgetComponent>(HitActor->GetComponentByClass(UWidgetComponent::StaticClass()));
             if (HealthBarWidget && HealthBarWidget->GetName() == "Health Bar Widget")
@@ -192,7 +186,6 @@ void AEarthMainWeapon::PerformLaserTrace()
                 FTimerHandle DamageTimerHandle;
                 // 데미지 적용 예약
                 GetWorldTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateUObject(this, &AEarthMainWeapon::ApplyLaserDamage, HitActor), LaserDamageDelay, false);
-                // ApplyLaserDamage(HitActor);
             }
         }
     }

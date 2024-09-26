@@ -42,7 +42,6 @@ void AMainweaponProjectile::Initialize()
 	if (AWeaponPawn* OwnerWeapon = Cast<AWeaponPawn>(GetOwner()))
     {
 		Damage *= OwnerWeapon->GetDamageScale();
-		MaxPenetration += OwnerWeapon->GetAdditionalPenetration();
 		Speed *= OwnerWeapon->GetProjectileSpeedScale();
 		Critical += OwnerWeapon->GetAdditionalCritical();
 		CollisionBox->OnComponentHit.AddDynamic(this, &AMainweaponProjectile::OnHit);
@@ -55,39 +54,31 @@ void AMainweaponProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* Oth
     AActor* MyOwner = GetOwner();
     if (MyOwner && OtherActor && OtherActor != this && OtherActor != MyOwner)
     {
-        if (!HitActors.Contains(OtherActor))
+        // 크리티컬 히트 계산
+        float FinalDamage = Damage;
+        bool bIsCriticalHit = FMath::RandRange(0.0f, 1.0f) < Critical;
+        if (bIsCriticalHit)
         {
-            HitActors.Add(OtherActor);
-
-            // 크리티컬 히트 계산
-            float FinalDamage = Damage;
-            bool bIsCriticalHit = FMath::RandRange(0.0f, 1.0f) < Critical;
-            if (bIsCriticalHit)
-            {
-                FinalDamage *= 2.0f;  // 크리티컬 시 2배 데미지
-            }
-
-            UGameplayStatics::ApplyDamage(
-                OtherActor,
-                FinalDamage,
-                MyOwner->GetInstigatorController(),
-                this,
-                UDamageType::StaticClass()
-            );
-
-            UNiagaraSystem* EffectToSpawn = bIsCriticalHit ? CriticalHitTemplate : HitTemplate;
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                GetWorld(),
-                EffectToSpawn,
-                GetActorLocation(),
-                GetActorRotation()
-            );
-
-            if (--MaxPenetration == 0)
-            {
-                Destroy();
-            }
+            FinalDamage *= 2.0f;  // 크리티컬 시 2배 데미지
         }
+
+        UGameplayStatics::ApplyDamage(
+            OtherActor,
+            FinalDamage,
+            MyOwner->GetInstigatorController(),
+            this,
+            UDamageType::StaticClass()
+        );
+
+        UNiagaraSystem* EffectToSpawn = bIsCriticalHit ? CriticalHitTemplate : HitTemplate;
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            EffectToSpawn,
+            GetActorLocation(),
+            GetActorRotation()
+        );
+
+        Destroy();
     }
 }
 

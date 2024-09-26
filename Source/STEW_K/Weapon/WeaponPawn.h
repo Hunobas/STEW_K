@@ -23,14 +23,12 @@ public:
 	// ====================== 게터 =============================
 	int32 GetCurrentWeaponLevel() const { return CurrentWeaponLevel; }
 	float GetDamageScale() const { return DamageScale; }
-	int32 GetAdditionalPenetration() const { return AdditionalPenetration; }
 	float GetProjectileSpeedScale() const { return SpeedScale; }
 	float GetAdditionalCritical() const { return AdditionalCritical; }
 	float GetFireRate() const { return FireRate; }
 
 	// ====================== 세터 =============================
 	void SetDamageScale(const float& NewDamageScale) { DamageScale = NewDamageScale; }
-	void SetAdditionalPenetration(const int32& NewAdditionalPenetration) { AdditionalPenetration = NewAdditionalPenetration; }
 	void SetProjectileSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
 	void SetAdditionalCritical(const float& NewAdditionalCritical) { AdditionalCritical = NewAdditionalCritical; }
 	virtual void SetFireRate(const float& NewFireRate)
@@ -59,8 +57,6 @@ private:
 	// ====================== 수치 기획 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float DamageScale = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-    int32 AdditionalPenetration = 0;
     UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float SpeedScale = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")

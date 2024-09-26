@@ -61,7 +61,6 @@ public:
 	float GetProjectileSpeedScale() const { return PrjectileSpeedScale; }
 	float GetAdditionalCritical() const { return AdditionalCritical; }
 	float GetHasteScale() const { return HasteScale; }
-	int32 GetAdditionalPenetration() const { return AdditionalPenetration; }
 	float GetExpGainScale() const { return ExpGainScale; }
 	float GetExpSpeedScale() const { return ExpSpeedScale; }
 
@@ -85,7 +84,6 @@ public:
 	void SetProjectileSpeedScale(const float& NewPrjectileSpeedScale);
 	void SetAdditionalCritical(const float& NewAdditionalCritical);
 	void SetHasteScale(const float& NewHasteScale);
-	void SetAdditionalPenetration(const int32& NewAdditionalPenetration);
 	void SetExpGainScale(const float& NewExpGainScale) { ExpGainScale = NewExpGainScale; }
 	void SetExpSpeedScale(const float& NewExpSpeedScale) { ExpSpeedScale = NewExpSpeedScale; }
 
@@ -218,8 +216,6 @@ private:
 	int32 AdditionalHealth = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float DamageScale = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-	int32 AdditionalPenetration = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float PrjectileSpeedScale = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")

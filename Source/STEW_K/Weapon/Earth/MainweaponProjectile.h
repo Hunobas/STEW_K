@@ -42,8 +42,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float Damage = 10.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-    int32 MaxPenetration = 1;
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float Speed = 5000.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float Critical = 0.1f;
@@ -53,7 +51,5 @@ private:
     UNiagaraSystem* HitTemplate;
 	UPROPERTY(EditDefaultsOnly, Category = "이펙트")
 	UNiagaraSystem* CriticalHitTemplate;
-
-	TSet<AActor*> HitActors;
 
 };

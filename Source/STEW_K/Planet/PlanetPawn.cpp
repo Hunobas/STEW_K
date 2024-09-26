@@ -204,16 +204,6 @@ void APlanetPawn::SetHasteScale(const float& NewHasteScale)
     }
 }
 
-void APlanetPawn::SetAdditionalPenetration(const int32& NewAdditionalPenetration)
-{
-    AdditionalPenetration = NewAdditionalPenetration;
-    MainWeapon->SetAdditionalPenetration(AdditionalPenetration);
-    for (AWeaponPawn* EquippedSubWeapon : EquippedSubWeapons)
-    {
-        EquippedSubWeapon->SetAdditionalPenetration(AdditionalPenetration);
-    }
-}
-
 void APlanetPawn::ComposeBaseSubobject()
 {
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collider"));

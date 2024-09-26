@@ -13,7 +13,6 @@ void AWeaponPawn::BeginPlay()
     if (APlanetPawn* OwnerPlanet = Cast<APlanetPawn>(GetOwner()))
     {
         DamageScale *= OwnerPlanet->GetDamageScale();
-        AdditionalPenetration += OwnerPlanet->GetAdditionalPenetration();
         SpeedScale *= OwnerPlanet->GetProjectileSpeedScale();
         AdditionalCritical += OwnerPlanet->GetAdditionalCritical();
         UpdateFireRate(OwnerPlanet->GetHasteScale());
