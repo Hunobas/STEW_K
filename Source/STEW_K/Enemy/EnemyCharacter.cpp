@@ -55,19 +55,7 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    if (PlayerPawn && bIsInJustAimWindow)
-    {
-        if (IsPlayerAimToThis())
-        {
-            FDamageEvent DamageEvent;
-            TakeDamage(JustAimDamage, DamageEvent, GetController(), this);
-            PlayerPawn->SucceedJustAim(this);
-            
-            GetWorldTimerManager().ClearTimer(ShootTimerHandle);
-            bIsInJustAimWindow = false;
-        }
-    }
+    
 }
 
 float AEnemyCharacter::GetHealthPercentage() const
@@ -91,27 +79,7 @@ void AEnemyCharacter::ReadyToShoot()
         true
     );
 
-    GetWorldTimerManager().SetTimer(JustAimWindowTimerHandle, this, &AEnemyCharacter::StartJustAimWindow, JustAimDelay, false);
-    GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &AEnemyCharacter::ExecuteShoot, ShootDelay, false);
-}
-
-void AEnemyCharacter::StartJustAimWindow()
-{
-    bIsInJustAimWindow = true;
-    GetWorldTimerManager().SetTimer(JustAimWindowTimerHandle, this, &AEnemyCharacter::EndJustAimWindow, ShootDelay - JustAimDelay - 0.01f, false);
-}
-
-void AEnemyCharacter::EndJustAimWindow()
-{
-    bIsInJustAimWindow = false;
-}
-
-void AEnemyCharacter::ExecuteShoot()
-{
-    if (!bIsInJustAimWindow)
-    {
-        Shoot();
-    }
+    GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &AEnemyCharacter::Shoot, ShootDelay, false);
 }
 
 void AEnemyCharacter::Shoot()
@@ -130,38 +98,6 @@ void AEnemyCharacter::Shoot()
         ShotSound,
         AimPoint->GetComponentLocation()
     );
-}
-
-bool AEnemyCharacter::IsPlayerAimToThis() const
-{
-    FVector DestinationVector = GetActorLocation() - PlayerPawn->GetForwardCelestialVector();
-    FVector2D LastAverageAimInput = PlayerPawn->GetLastAverageAimInput();
-
-    if (DestinationVector.Size() < 500.f)
-    {
-        if (DestinationVector.X <= 0 && DestinationVector.Y <= 0
-            && LastAverageAimInput.X <= 0 && LastAverageAimInput.Y <= 0)
-        {
-            return true;
-        }
-        else if (DestinationVector.X >= 0 && DestinationVector.Y <= 0
-            && LastAverageAimInput.X >= 0 && LastAverageAimInput.Y <= 0)
-        {
-            return true;
-        }
-        else if (DestinationVector.X >= 0 && DestinationVector.Y >= 0
-            && LastAverageAimInput.X >= 0 && LastAverageAimInput.Y >= 0)
-        {
-            return true;
-        }
-        else if (DestinationVector.X <= 0 && DestinationVector.Y >= 0
-            && LastAverageAimInput.X <= 0 && LastAverageAimInput.Y >= 0)
-        {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 void AEnemyCharacter::HandleDestruction()

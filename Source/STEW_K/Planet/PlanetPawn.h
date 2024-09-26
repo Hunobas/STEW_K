@@ -50,7 +50,6 @@ public:
 
 	void GainExperience(float XP);
     void LevelUp();
-	void SucceedJustAim(AEnemyCharacter* Enemy);
 	void BlockPlayerInput();
     void UnblockPlayerInput();
 	void HandleDestruction();
@@ -79,17 +78,6 @@ public:
 	int32 GetPassiveItemSlotsFilled() const { return PassiveItemSlotsFilled; }
 
 	AWeaponPawn* GetMainWeapon() const { return MainWeapon; }
-
-	FVector GetForwardCelestialVector() const { return MainWeaponSocket->GetComponentLocation() + (MainWeaponSocket->GetComponentRotation()).Vector() * 1000.f; }
-	FVector2D GetLastAverageAimInput() const
-	{
-		FVector2D Sum = FVector2D::ZeroVector;
-		for (const FVector2D& InputAim : InputAimBuffer)
-		{
-			Sum += InputAim;
-		}
-    	return Sum / InputAimBufferSize;
-	}
 
 	// ====================== 세터 =============================
 	void SetAdditionalHealth(const int32& NewAdditionalHealth);
@@ -129,12 +117,6 @@ protected:
     float AimArmLength = 240.0f;
     UPROPERTY(EditAnywhere, Category = "Camera", meta = (ClampMin = "0.0"))
     float ArmLengthInterpSpeed = 5.0f;
-	UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimDuration = 0.7f;
-    UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimZoomDuration = 0.2f;
-	UPROPERTY(EditAnywhere, Category = "Camera")
-    float JustAimTimeDilation = 1.f;
 
 private:
 	void ComposeBaseSubobject();
@@ -148,10 +130,6 @@ private:
 	void StartAim();
     void StopAim();
 	void UpdateArmLength(float DeltaTime);
-
-	void AddInputToBuffer(const FVector2D& Input);
-    void UpdateJustAimArmLength();
-    void EndJustAimEffect();
 
 	void UpdateOrbitParameters();
 	void RunOrbit(const float& DeltaTime);
@@ -229,13 +207,6 @@ private:
 	// 카메라 에임
 	float CurrentArmLength;
 	bool bIsAiming;
-	// 전투 시 저스트 에임
-	TArray<FVector2D> InputAimBuffer;
-	int32 InputAimBufferSize = 10;
-	int32 InputAimBufferIndex = 0;
-	FTimerHandle JustAimTimerHandle;
-	float JustAimElapsedTime;
-    bool bIsJustAiming;
 
 	// 행성 공전 메커니즘
 	float OrbitRadius;

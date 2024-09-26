@@ -59,7 +59,6 @@ void APlanetPawn::BeginPlay()
 	CurrentLevel = 1;
     CurrentXP = 0;
     CalculateXPToNextLevel();
-    InputAimBuffer.Init(FVector2D::ZeroVector, InputAimBufferSize);
 
     HealthComponent = FindComponentByClass<UHealthComponent>();
 
@@ -108,44 +107,6 @@ void APlanetPawn::LevelUp()
     {
         PC->ShowRewardSelection();
     }
-}
-
-void APlanetPawn::SucceedJustAim(AEnemyCharacter* Enemy)
-{
-    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-        GetWorld(),
-        JustAimTemplate,
-        Enemy->GetAimPointLocation(),
-        FRotator::ZeroRotator
-    );
-    
-    UGameplayStatics::PlaySoundAtLocation(
-        this,
-        JustAimSound,
-        GetActorLocation()
-    );
-
-    // 카메라를 Enemy의 액터 위치로 고정
-    if (APlayerController* PC = Cast<APlayerController>(GetController()))
-    {
-        if (Enemy)
-        {
-            FVector CameraLookAtDirection = Enemy->GetActorLocation() - GetActorLocation();
-            FRotator NewRotation = CameraLookAtDirection.Rotation();
-            PC->SetControlRotation(NewRotation);
-        }
-    }
-
-    // Look 액션 비활성화
-    bIsJustAiming = true;
-    BlockPlayerInput();
-
-    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), JustAimTimeDilation);
-
-    // ArmLength 조정 시작
-    JustAimElapsedTime = 0.0f;
-    GetWorldTimerManager().SetTimer(JustAimTimerHandle, this, &APlanetPawn::EndJustAimEffect, JustAimDuration, false);
-    GetWorldTimerManager().SetTimerForNextTick(this, &APlanetPawn::UpdateJustAimArmLength);
 }
 
 void APlanetPawn::BlockPlayerInput()
@@ -299,17 +260,10 @@ void APlanetPawn::Look(const FInputActionValue& Value)
         else
         {
             const FVector2D LookAxisValue = Value.Get<FVector2D>();
-            AddInputToBuffer(LookAxisValue);
             AddControllerYawInput(LookAxisValue.X * GetWorld()->GetDeltaSeconds() * RotationRate);
             AddControllerPitchInput(LookAxisValue.Y * GetWorld()->GetDeltaSeconds() * RotationRate);
         }
     }
-}
-
-void APlanetPawn::AddInputToBuffer(const FVector2D& Input)
-{
-    InputAimBuffer[InputAimBufferIndex] = Input;
-    InputAimBufferIndex = (InputAimBufferIndex + 1) % InputAimBufferSize;
 }
 
 void APlanetPawn::SnappedLook(const FInputActionValue& Value)
@@ -374,47 +328,6 @@ void APlanetPawn::UpdateArmLength(float DeltaTime)
 	float TargetArmLength = bIsAiming ? AimArmLength : DefaultArmLength;
     CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime, ArmLengthInterpSpeed);
     SpringArm->TargetArmLength = CurrentArmLength;
-}
-
-void APlanetPawn::UpdateJustAimArmLength()
-{
-    if (bIsJustAiming)
-    {
-        float DeltaTime = GetWorld()->GetDeltaSeconds();
-        float CurrentTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
-        
-        JustAimElapsedTime += DeltaTime / CurrentTimeDilation;
-        
-        if (JustAimElapsedTime < JustAimZoomDuration)
-        {
-            // 초기 줌 인 단계
-            float Alpha = JustAimElapsedTime / JustAimZoomDuration;
-            CurrentArmLength = FMath::Lerp(CurrentArmLength, AimArmLength, Alpha);
-        }
-        else
-        {
-            // 줌 아웃 및 시간 복구 단계
-            float TargetArmLength = bIsAiming ? AimArmLength : DefaultArmLength;
-            CurrentArmLength = FMath::FInterpTo(CurrentArmLength, TargetArmLength, DeltaTime / CurrentTimeDilation, ArmLengthInterpSpeed * 0.3f);
-            
-            // 시간 흐름을 서서히 정상화
-            float NewTimeDilation = FMath::FInterpTo(CurrentTimeDilation, 1.0f, DeltaTime, 0.5f);
-            UGameplayStatics::SetGlobalTimeDilation(GetWorld(), NewTimeDilation);
-        }
-        
-        SpringArm->TargetArmLength = CurrentArmLength;
-        
-        // 다음 프레임에 다시 호출
-        GetWorldTimerManager().SetTimerForNextTick(this, &APlanetPawn::UpdateJustAimArmLength);
-    }
-}
-
-void APlanetPawn::EndJustAimEffect()
-{
-    bIsJustAiming = false;
-    
-    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
-    UnblockPlayerInput();
 }
 
 void APlanetPawn::UpdateOrbitParameters()

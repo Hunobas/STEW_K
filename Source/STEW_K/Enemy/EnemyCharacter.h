@@ -51,11 +51,6 @@ public:
 	void SetSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
 
 protected:
-    void StartJustAimWindow();
-    void EndJustAimWindow();
-    virtual void ExecuteShoot();
-	bool IsPlayerAimToThis() const;
-
     APlanetPawn* PlayerPawn;
 
     UPROPERTY(EditDefaultsOnly, Category = "Components")
@@ -83,11 +78,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float XPDropScale = 1.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-    float JustAimAcceptableRadius = 250.f;
-	FTimerHandle JustAimWindowTimerHandle;
     FTimerHandle ShootTimerHandle;
-	bool bIsInJustAimWindow = false;
 
 	// ====================== 이펙트 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "이펙트")
