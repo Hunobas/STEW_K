@@ -33,7 +33,7 @@ public:
 
 	void ReadyToShoot();
 	virtual void Shoot();
-	void HandleDestruction();
+	virtual void HandleDestruction();
 
 	// ====================== 게터 =============================
 	UFUNCTION(BlueprintCallable, Category = "Health")
@@ -44,6 +44,7 @@ public:
 	float GetDamageScale() const { return DamageScale; }
 	float GetSpeedScale() const { return SpeedScale; }
 	float GetXPDropScale() const { return XPDropScale; }
+	int32 GetFieldScore() const { return FieldScore; }
 
 	// ====================== 세터 =============================
 	void SetHealthScale(const float& NewHealthScale) { HealthScale = NewHealthScale; }
@@ -77,6 +78,8 @@ protected:
 	float SpeedScale = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float XPDropScale = 1.f;
+	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+	int32 FieldScore = 0;
 
     FTimerHandle ShootTimerHandle;
 

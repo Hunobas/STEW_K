@@ -23,6 +23,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void Shoot() override;
+    virtual void HandleDestruction() override;
 
 protected:
     virtual void BeginPlay() override;

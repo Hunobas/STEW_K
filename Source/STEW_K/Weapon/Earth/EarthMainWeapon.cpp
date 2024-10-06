@@ -176,17 +176,18 @@ void AEarthMainWeapon::PerformLaserTrace()
                 HealthBarWidget->SetHiddenInGame(false);
             }
 
-            float CurrentTime = GetWorld()->GetTimeSeconds();
-            // 아직 안 맞았거나 맞은 뒤 LaserTraceDuration / MaxHitInOneCycle_LV7 초가 흐르면 데미지 적용
-            if (!ActorDamageTimestamps.Contains(HitActor) || CurrentTime - ActorDamageTimestamps[HitActor] >= (LaserTraceDuration / MaxHitInOneCycle_LV7))
-            {
-                // 드라마틱한 연출을 위해 한번에 터지는 딜레이 시간 계산
-                float LaserDamageDelay = (CurrentTime - FireTime) * (FireTime - CurrentTime) / LaserTraceDuration + LaserTraceDuration;
-                ActorDamageTimestamps.Add(HitActor, CurrentTime);
-                FTimerHandle DamageTimerHandle;
-                // 데미지 적용 예약
-                GetWorldTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateUObject(this, &AEarthMainWeapon::ApplyLaserDamage, HitActor), LaserDamageDelay, false);
-            }
+            // float CurrentTime = GetWorld()->GetTimeSeconds();
+            // // 아직 안 맞았거나 맞은 뒤 LaserTraceDuration / MaxHitInOneCycle_LV7 초가 흐르면 데미지 적용
+            // if (!ActorDamageTimestamps.Contains(HitActor) || CurrentTime - ActorDamageTimestamps[HitActor] >= (LaserTraceDuration / MaxHitInOneCycle_LV7))
+            // {
+            //     // 드라마틱한 연출을 위해 한번에 터지는 딜레이 시간 계산
+            //     float LaserDamageDelay = (CurrentTime - FireTime) * (FireTime - CurrentTime) / LaserTraceDuration + LaserTraceDuration;
+            //     ActorDamageTimestamps.Add(HitActor, CurrentTime);
+            //     FTimerHandle DamageTimerHandle;
+            //     // 데미지 적용 예약
+            //     GetWorldTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateUObject(this, &AEarthMainWeapon::ApplyLaserDamage, HitActor), LaserDamageDelay, false);
+            // }
+            ApplyLaserDamage(HitActor);
         }
     }
 }

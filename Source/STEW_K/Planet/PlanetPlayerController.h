@@ -15,26 +15,24 @@ class URewardSelectionWidget;
 UCLASS()
 class STEW_K_API APlanetPlayerController : public APlayerController
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	APlanetPlayerController();
+    APlanetPlayerController();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
 public:
     virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "HUD")
+    UFUNCTION(BlueprintCallable, Category = "HUD")
     FString GetTimerString() const;
 
-	void ShowRewardSelection();
-	void ResumeGameplay();
+    void ShowRewardSelection();
+    void ResumeGameplay();
 
 private:
-    void UpdateTimer(float DeltaTime);
-
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> HUDClass;
     UPROPERTY(EditAnywhere, Category = "UI")
@@ -44,7 +42,6 @@ private:
     UPROPERTY()
     URewardSelectionWidget* RewardSelectionWidget;
 
-    float TotalSeconds = 0.0f;
-	bool bIsGamePaused = false;
-	
+    UPROPERTY()
+    UGameTimeManager* GameTimeManager;
 };

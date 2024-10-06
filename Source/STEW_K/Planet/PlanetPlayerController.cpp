@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "../UI/RewardSelectionWidget.h"
+#include "../GameTimeManager.h"
 
 #include "PlanetPlayerController.h"
 
@@ -20,20 +21,18 @@ void APlanetPlayerController::BeginPlay()
     {
         HUD->AddToViewport();
     }
+
+    GameTimeManager = UGameTimeManager::GetInstance();
 }
 
 void APlanetPlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    
-    if (!bIsGamePaused)
-    {
-        UpdateTimer(DeltaTime);
-    }
 }
 
 FString APlanetPlayerController::GetTimerString() const
 {
+    float TotalSeconds = GameTimeManager->GetElapsedTime();
     int32 Minutes = FMath::FloorToInt(TotalSeconds / 60.0f);
     int32 Seconds = FMath::FloorToInt(FMath::Fmod(TotalSeconds, 60.0f));
 
@@ -44,8 +43,8 @@ void APlanetPlayerController::ShowRewardSelection()
 {
     if (RewardSelectionClass)
     {
-        bIsGamePaused = true;
         UGameplayStatics::SetGamePaused(GetWorld(), true);
+        GameTimeManager->PauseTime();
         
         RewardSelectionWidget = CreateWidget<URewardSelectionWidget>(this, RewardSelectionClass);
         if (RewardSelectionWidget)
@@ -59,13 +58,8 @@ void APlanetPlayerController::ShowRewardSelection()
 
 void APlanetPlayerController::ResumeGameplay()
 {
-    bIsGamePaused = false;
     UGameplayStatics::SetGamePaused(GetWorld(), false);
+    GameTimeManager->ResumeTime();
     bShowMouseCursor = false;
     SetInputMode(FInputModeGameOnly());
-}
-
-void APlanetPlayerController::UpdateTimer(float DeltaTime)
-{
-    TotalSeconds += DeltaTime;
 }

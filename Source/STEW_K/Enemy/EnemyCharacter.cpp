@@ -10,6 +10,7 @@
 #include "../Planet/PlanetPawn.h"
 #include "../STEWKGameModeBase.h"
 #include "../HealthComponent.h"
+#include "../WaveManager.h"
 
 #include "EnemyCharacter.h"
 
@@ -44,9 +45,9 @@ void AEnemyCharacter::BeginPlay()
     }
     if (ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		SetHealthScale(GameMode->GetHealthScale());
-        SetDamageScale(GameMode->GetDamageScale());
-        SetSpeedScale(GameMode->GetSpeedScale());
+		SetHealthScale(GameMode->GetWaveManager()->GetHealthScale());
+        SetDamageScale(GameMode->GetWaveManager()->GetDamageScale());
+        SetSpeedScale(GameMode->GetWaveManager()->GetSpeedScale());
 	}
     PlayerPawn = Cast<APlanetPawn>(UGameplayStatics::GetPlayerPawn(this, 0));
 	HealthComponent = FindComponentByClass<UHealthComponent>();

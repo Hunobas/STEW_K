@@ -19,25 +19,30 @@ public:
     ACelestialBody();
     virtual void Tick(float DeltaTime) override;
 
-    static ACelestialBody* GetInstance();
-    USceneComponent* GetRandomActiveAimPointOrNull();
+    USceneComponent* GetRandomActiveAimPointOrNull() const;
+    TArray<USceneComponent*> GetNthPointsRowOrNull(const int32& n) const;
     void MarkAimPointAsOccupied(USceneComponent* AimPoint);
     void MarkAimPointAsFree(USceneComponent* AimPoint);
+    void FreeAllAimPoints();
 
 protected:
     virtual void BeginPlay() override;
 
 private:
-    static ACelestialBody* Instance;
-
     UPROPERTY(EditDefaultsOnly, Category = "Components")
     UCapsuleComponent* CapsuleComp;
 
     UPROPERTY(EditDefaultsOnly, Category = "Components")
     TArray<USceneComponent*> AimPoints;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Components")
-    int32 AimPointsNum = 36;
+    UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
+    float SphereRadius = 1500.f;
+    UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
+    int32 PointsPerRow = 24;
+    UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
+    int32 NumRows = 5;
+    UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
+    float RowPitchInterval = 15.0f;
 
     UPROPERTY()
     APlanetPawn* PlayerPawn;
@@ -45,7 +50,7 @@ private:
     TArray<bool> AimPointActivation;
     TArray<bool> AimPointOccupation;
 
-    void UpdateAimPointActivation();
-	bool IsInFrustum(const FVector& Location, float Radius = 0.0f);
+    // void UpdateAimPointActivation();
+	// bool IsInFrustum(const FVector& Location, float Radius = 0.0f);
 
 };

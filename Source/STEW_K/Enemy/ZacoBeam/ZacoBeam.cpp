@@ -2,8 +2,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SceneComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "../../Planet/PlanetPawn.h"
+#include "../../STEWKGameModeBase.h"
+#include "../../CelestialBody.h"
 
 #include "ZacoBeam.h"
 
@@ -41,5 +44,20 @@ void AZacoBeam::Shoot()
     {
         FDamageEvent DamageEvent;
         PlayerPawn->TakeDamage(Damage, DamageEvent, GetController(), this);
+    }
+}
+
+void AZacoBeam::HandleDestruction()
+{
+    Super::HandleDestruction();
+
+    if (ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+    {
+        ACelestialBody* CelestialBody = GameMode->GetCelestialBody();
+        USceneComponent* AttachParent = Cast<USceneComponent>(GetAttachParentActor());
+        if (CelestialBody && AttachParent)
+        {
+            CelestialBody->MarkAimPointAsFree(AttachParent);
+        }
     }
 }

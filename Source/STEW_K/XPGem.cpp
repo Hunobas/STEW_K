@@ -5,7 +5,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
-#include "STEWKGameModeBase.h"
 #include "Planet/PlanetPawn.h"
 
 #include "XPGem.h"
@@ -53,11 +52,9 @@ void AXPGem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 
 void AXPGem::PlayerGainXP()
 {
-    ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (PlayerPawn && GameMode)
+	if (PlayerPawn)
 	{
 		PlayerPawn->GainExperience(XP);
-        GameMode->GainXpGem();
 	}
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
         GetWorld(),
