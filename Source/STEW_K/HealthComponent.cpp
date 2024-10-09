@@ -67,7 +67,7 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 
 	if(STEWKGameModeBase && Health <= 0)
 	{
-		STEWKGameModeBase->ActorDied(DamagedActor);
+		STEWKGameModeBase->ActorDied(DamagedActor, true);
 	}
 }
 

@@ -10,8 +10,8 @@ UENUM(Blueprintable)
 enum class EWeaponType : uint8
 {
     MainWeapon,
-    WeatherStation,
-    PositronRifle
+    EquatorWave,
+    WeatherStation
 };
 
 UCLASS(Blueprintable)

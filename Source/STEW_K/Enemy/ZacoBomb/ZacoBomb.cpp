@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "../../STEWKGameModeBase.h"
 #include "../../Planet/PlanetPawn.h"
 
 #include "ZacoBomb.h"
@@ -41,16 +42,8 @@ void AZacoBomb::ExplodeAndDamagePlayer()
         PlayerPawn->TakeDamage(Damage, DamageEvent, GetController(), this);
     }
 
-    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-        GetWorld(),
-        ExplodeTemplate,
-        GetActorLocation(),
-        GetActorRotation()
-    );
-    UGameplayStatics::PlaySoundAtLocation(
-        GetWorld(),
-        ExplodeSound,
-        GetActorLocation()
-    );
-    Destroy();
+    if (ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GameMode->ActorDied(this);
+	}
 }

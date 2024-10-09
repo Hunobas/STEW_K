@@ -17,8 +17,11 @@ AEarthMainWeapon::AEarthMainWeapon()
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
 	RootComponent = WeaponMesh;
 
+    SpawnPointCenter = CreateDefaultSubobject<USceneComponent>(TEXT("Spawn Point Center"));
+	SpawnPointCenter->SetupAttachment(WeaponMesh);
+
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
-	ProjectileSpawnPoint->SetupAttachment(WeaponMesh);
+	ProjectileSpawnPoint->SetupAttachment(SpawnPointCenter);
 
     LeftSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Left Spawn Point"));
 	LeftSpawnPoint->SetupAttachment(ProjectileSpawnPoint);
@@ -70,9 +73,9 @@ void AEarthMainWeapon::WeaponLevelUp(const int32& NewCurrentWeaponLevel)
     }
 }
 
-void AEarthMainWeapon::FireProjectile()
+void AEarthMainWeapon::Fire()
 {
-    Super::FireProjectile();
+    Super::Fire();
 
     if (bReleasePositronRifle)
     {
@@ -137,7 +140,7 @@ void AEarthMainWeapon::FirePositronRifle()
     UGameplayStatics::PlaySoundAtLocation(GetWorld(), LaserSound, GetActorLocation());
 
     TracedActors.Empty();
-    ActorDamageTimestamps.Empty();
+    // ActorDamageTimestamps.Empty();
     FireTime = GetWorld()->GetTimeSeconds();
     GetWorldTimerManager().SetTimer(LaserTraceTimerHandle, this, &AEarthMainWeapon::PerformLaserTrace, LaserTraceInterval, true);
     GetWorldTimerManager().SetTimer(LaserCooldownTimerHandle, this, &AEarthMainWeapon::ClearLaserTrace, LaserTraceDuration, false);
@@ -222,5 +225,5 @@ void AEarthMainWeapon::ClearLaserTrace()
 {
     GetWorldTimerManager().ClearTimer(LaserTraceTimerHandle);
     TracedActors.Empty();
-    ActorDamageTimestamps.Empty();
+    // ActorDamageTimestamps.Empty();
 }

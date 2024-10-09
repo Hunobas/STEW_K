@@ -8,19 +8,20 @@
 
 #include "WeaponPawn.generated.h"
 
+class APlanetPawn;
+
 UCLASS()
 class STEW_K_API AWeaponPawn : public APawn
 {
 	GENERATED_BODY()
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:	
+	virtual void Initialize();
     virtual void WeaponLevelUp(const int32& NewCurrentWeaponLevel);
+	virtual void HandleMechanicByRotation(const float& Rotation);
 
 	// ====================== 게터 =============================
+	EWeaponType GetWeaponType() const { return WeaponType; }
 	int32 GetCurrentWeaponLevel() const { return CurrentWeaponLevel; }
 	float GetDamageScale() const { return DamageScale; }
 	float GetProjectileSpeedScale() const { return SpeedScale; }
@@ -28,30 +29,34 @@ public:
 	float GetFireRate() const { return FireRate; }
 
 	// ====================== 세터 =============================
-	void SetDamageScale(const float& NewDamageScale) { DamageScale = NewDamageScale; }
-	void SetProjectileSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
-	void SetAdditionalCritical(const float& NewAdditionalCritical) { AdditionalCritical = NewAdditionalCritical; }
+	virtual void SetDamageScale(const float& NewDamageScale) { DamageScale = NewDamageScale; }
+	virtual void SetProjectileSpeedScale(const float& NewSpeedScale) { SpeedScale = NewSpeedScale; }
+	virtual void SetAdditionalCritical(const float& NewAdditionalCritical) { AdditionalCritical = NewAdditionalCritical; }
 	virtual void SetFireRate(const float& NewFireRate)
 	{
+		DefaultFireRate = NewFireRate;
 		FireRate = NewFireRate;
-		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::FireProjectile, FireRate, true);
-		FireProjectile();
+		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::Fire, FireRate, true);
+		Fire();
 	}
 	virtual void UpdateFireRate(const float& HasteScale)
 	{
-		FireRate /= HasteScale;
-		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::FireProjectile, FireRate, true);
-		FireProjectile();
+		FireRate = DefaultFireRate / HasteScale;
+		GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AWeaponPawn::Fire, FireRate, true);
+		Fire();
 	}
 
 protected:
-	virtual void FireProjectile();
+	virtual void Fire();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
     EWeaponType WeaponType;
 
 	UPROPERTY(EditDefaultsOnly, Category = "디버깅")
 	int32 CurrentWeaponLevel = 0;
+
+	APlanetPawn* OwnerPlanet;
+	FTimerHandle FireTimerHandle;
 
 private:
 	// ====================== 수치 기획 =============================
@@ -61,9 +66,9 @@ private:
     float SpeedScale = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
     float AdditionalCritical = 0.0f;
-    UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
+    float DefaultFireRate = 0.2f;
+	UPROPERTY()
     float FireRate = 0.2f;
-
-	FTimerHandle FireTimerHandle;
 
 };

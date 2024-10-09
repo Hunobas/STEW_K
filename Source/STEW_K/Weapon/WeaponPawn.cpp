@@ -5,12 +5,12 @@
 
 #include "WeaponPawn.h"
 
-// Called when the game starts or when spawned
-void AWeaponPawn::BeginPlay()
-{
-	Super::BeginPlay();
 
-    if (APlanetPawn* OwnerPlanet = Cast<APlanetPawn>(GetOwner()))
+// Called when the game starts or when spawned
+void AWeaponPawn::Initialize()
+{
+    OwnerPlanet = Cast<APlanetPawn>(GetOwner());
+    if (OwnerPlanet)
     {
         DamageScale *= OwnerPlanet->GetDamageScale();
         SpeedScale *= OwnerPlanet->GetProjectileSpeedScale();
@@ -24,9 +24,12 @@ void AWeaponPawn::WeaponLevelUp(const int32& NewCurrentWeaponLevel)
     CurrentWeaponLevel = NewCurrentWeaponLevel;
 }
 
-void AWeaponPawn::FireProjectile()
+void AWeaponPawn::HandleMechanicByRotation(const float& Rotation)
 {
     // Nothing to do here.
 }
 
-
+void AWeaponPawn::Fire()
+{
+    // Nothing to do here.
+}

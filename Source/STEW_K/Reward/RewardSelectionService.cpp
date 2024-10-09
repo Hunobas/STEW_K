@@ -226,12 +226,16 @@ void URewardSelectionService::HandleWeaponReward(UWeaponReward* WeaponReward)
                 MainWeapon->WeaponLevelUp(WeaponReward->CurrentLevel);
             }
             break;
-        case EWeaponType::WeatherStation:
-            break;
-        case EWeaponType::PositronRifle:
-            break;
         default:
-            UE_LOG(LogTemp, Warning, TEXT("Unknown WeaponType: %s"), *WeaponReward->WeaponName);
+            AWeaponPawn* SubWeapon = PlayerPawn->GetSubWeaponOrNull(WeaponReward->WeaponType);
+            if (SubWeapon == nullptr)
+            {
+                PlayerPawn->AddSubWeapon(WeaponReward->WeaponType);
+            }
+            else
+            {
+                SubWeapon->WeaponLevelUp(WeaponReward->CurrentLevel);
+            }
             break;
     }
 }

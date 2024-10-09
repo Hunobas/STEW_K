@@ -56,7 +56,7 @@ public:
 	}
 
 protected:
-	virtual void FireProjectile() override;
+	virtual void Fire() override;
 
 private:
 	AMainweaponProjectile* SpawnProjectileAtPointOrNull(USceneComponent* SpawnPoint);
@@ -73,7 +73,7 @@ private:
 	FTimerHandle LaserTraceTimerHandle;
     FTimerHandle LaserCooldownTimerHandle;
 	TArray<AActor*> TracedActors;
-    TMap<AActor*, float> ActorDamageTimestamps;
+    // TMap<AActor*, float> ActorDamageTimestamps;
 
 	float FireTime;
 	float LaserTraceDuration = 3.2f;
@@ -82,6 +82,8 @@ private:
 	// ====================== 기본 구성 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* WeaponMesh;
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	USceneComponent* SpawnPointCenter;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	USceneComponent* ProjectileSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, Category = "Components")

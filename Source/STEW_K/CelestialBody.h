@@ -36,7 +36,7 @@ private:
     TArray<USceneComponent*> AimPoints;
 
     UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
-    float SphereRadius = 1500.f;
+    float SphereRadius = 2000.f;
     UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")
     int32 PointsPerRow = 24;
     UPROPERTY(EditDefaultsOnly, Category = "스폰 포인트")

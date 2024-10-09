@@ -52,7 +52,8 @@
 			"xtree": "cpp",
 			"xutility": "cpp",
 			"random": "cpp",
-			"xiosbase": "cpp"
+			"xiosbase": "cpp",
+			"__config": "cpp"
 		}
 	},
 	"extensions": {

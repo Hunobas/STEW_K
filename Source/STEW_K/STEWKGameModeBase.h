@@ -29,7 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-    void ActorDied(AActor* DeadActor);
+    void ActorDied(AActor* DeadActor, bool bIsCaught = false);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "아웃 게임")
     float StartDelay = 3.f;
@@ -40,13 +40,13 @@ public:
     float OrbitPeriod = 1200.0f; // 20분
 
     // ====================== 게터 =============================
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "매니저")
+    UFUNCTION(BlueprintCallable, Category = "매니저")
     URewardSelectionService* GetRewardSelectionService() const { return RewardSelectionService; }
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "매니저")
+    UFUNCTION(BlueprintCallable, Category = "매니저")
     UGameTimeManager* GetGameTimeManager() const { return GameTimeManager; }
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "매니저")
+    UFUNCTION(BlueprintCallable, Category = "매니저")
     ACelestialBody* GetCelestialBody() const { return CelestialBody; }
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "매니저")
+    UFUNCTION(BlueprintCallable, Category = "매니저")
     UWaveManager* GetWaveManager() const { return WaveManager; }
 
 private:

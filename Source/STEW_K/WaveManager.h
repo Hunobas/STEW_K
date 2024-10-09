@@ -30,7 +30,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Wave Management")
     void SpawnEnemiesAtNthRow(TSubclassOf<AEnemyCharacter> EnemyClass, int32 n);
     UFUNCTION(BlueprintCallable, Category = "Wave Management")
-    void SubtractFieldScore(AEnemyCharacter* DestroyedEnemy);
+    void SubtractFieldScore(int32 Score);
 
     // ====================== 게터 =============================
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "전투 스케일")
@@ -54,7 +54,7 @@ private:
     TSubclassOf<AEnemyCharacter> ZacoBeam;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "난이도 강화", meta = (AllowPrivateAccess = "true"))
-    int32 MaxFieldScore = 5;
+    int32 MaxFieldScore = 4;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "난이도 강화", meta = (AllowPrivateAccess = "true"))
 	int32 StartScore = 4;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "난이도 강화", meta = (AllowPrivateAccess = "true"))

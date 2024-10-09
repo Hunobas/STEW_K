@@ -49,6 +49,8 @@ void APlanetPawn::BeginPlay()
 	}
 	
 	CurrentAngle = 0.0f;
+    CumulativeRotation = 0.0f;
+    CumulativeCorrection = CumulativeDefaultCorrection;
 	RotationRate = DefaultRotationRate;
 	LastSnappedLookTime = -SnappedLookCooldown;
 	SnappedRotation = GetActorRotation();
@@ -152,6 +154,18 @@ void APlanetPawn::HandleDestruction()
 	SetActorTickEnabled(false);
 }
 
+AWeaponPawn* APlanetPawn::GetSubWeaponOrNull(EWeaponType WeaponType) const
+{ 
+    for (AWeaponPawn* EquippedSubWeapon : EquippedSubWeapons)
+    {
+        if (EquippedSubWeapon->GetWeaponType() == WeaponType)
+        {
+            return EquippedSubWeapon;
+        }
+    }
+    return nullptr;
+}
+
 void APlanetPawn::SetAdditionalHealth(const int32& NewAdditionalHealth)
 {
     if (HealthComponent)
@@ -252,7 +266,11 @@ void APlanetPawn::Look(const FInputActionValue& Value)
             const FVector2D LookAxisValue = Value.Get<FVector2D>();
             AddControllerYawInput(LookAxisValue.X * GetWorld()->GetDeltaSeconds() * RotationRate);
             AddControllerPitchInput(LookAxisValue.Y * GetWorld()->GetDeltaSeconds() * RotationRate);
+
+            CumulativeRotation += LookAxisValue.Size() * CumulativeCorrection;
+            CumulativeRotation = FMath::Fmod(CumulativeRotation, 360.0f);
         }
+        BindRotationToAllWeapons();
     }
 }
 
@@ -270,16 +288,20 @@ void APlanetPawn::SnappedLook(const FInputActionValue& Value)
 	SnappedRotation.Pitch = FMath::RoundToFloat(CurrentRotation.Pitch / SnapAngle) * SnapAngle;
 	SnappedRotation.Yaw = FMath::RoundToFloat(CurrentRotation.Yaw / SnapAngle) * SnapAngle;
 
-	if (FMath::Abs(LookAxisValue.X) > SnapThreshold)
-	{
-		SnappedRotation.Yaw += FMath::Sign(LookAxisValue.X) * SnapAngle;	// 30도 간격
-	    GetController()->SetControlRotation(SnappedRotation);
-	}
-	if (FMath::Abs(LookAxisValue.Y) > SnapThreshold * 0.9)
-	{
-		SnappedRotation.Pitch -= FMath::Sign(LookAxisValue.Y) * SnapAngle;			// 30도 간격
-	    GetController()->SetControlRotation(SnappedRotation);
-	}
+    if (FMath::Abs(LookAxisValue.X) > SnapThreshold)
+    {
+        SnappedRotation.Yaw += FMath::Sign(LookAxisValue.X) * SnapAngle;
+        GetController()->SetControlRotation(SnappedRotation);
+        CumulativeRotation += SnapAngle;
+        CumulativeRotation = FMath::Fmod(CumulativeRotation, 360.0f);
+    }
+    if (FMath::Abs(LookAxisValue.Y) > SnapThreshold * 0.9)
+    {
+        SnappedRotation.Pitch -= FMath::Sign(LookAxisValue.Y) * SnapAngle;
+        GetController()->SetControlRotation(SnappedRotation);
+        CumulativeRotation += SnapAngle;
+        CumulativeRotation = FMath::Fmod(CumulativeRotation, 360.0f);
+    }
 
 	LastSnappedLookTime = GetWorld()->GetTimeSeconds();
 }
@@ -305,12 +327,14 @@ void APlanetPawn::StartAim()
 {
 	bIsAiming = true;
 	RotationRate = DefaultRotationRate / 2;
+    CumulativeCorrection = CumulativeDefaultCorrection / 2;
 }
 
 void APlanetPawn::StopAim()
 {
 	bIsAiming = false;
 	RotationRate = DefaultRotationRate;
+    CumulativeCorrection = CumulativeDefaultCorrection;
 }
 
 void APlanetPawn::UpdateArmLength(float DeltaTime)
@@ -354,7 +378,6 @@ void APlanetPawn::RunOrbit(const float& DeltaTime)
 void APlanetPawn::InitializeWeaponSockets()
 {
 	SubWeaponSockets = { SubWeaponSocket1, SubWeaponSocket2, SubWeaponSocket3, SubWeaponSocket4 };
-	SubWeaponClasses.SetNum(TypesOfSubWeapons);
 }
 
 void APlanetPawn::SpawnMainWeapon()
@@ -373,29 +396,49 @@ void APlanetPawn::SpawnMainWeapon()
         {
             MainWeapon->SetOwner(this);
             MainWeapon->AttachToComponent(MainWeaponSocket, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+            MainWeapon->Initialize();
         }
     }
 }
 
-void APlanetPawn::AddSubWeapon(TSubclassOf<AWeaponPawn> WeaponClass)
+void APlanetPawn::AddSubWeapon(EWeaponType WeaponType)
 {
-	if (EquippedSubWeapons.Num() < MaxSubWeapons && WeaponClass)
+    for (AWeaponPawn* EquippedSubWeapon : EquippedSubWeapons)
     {
-        int32 Index = EquippedSubWeapons.Num();
-
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-        FVector Location = SubWeaponSockets[Index]->GetComponentLocation();
-        FRotator Rotation = SubWeaponSockets[Index]->GetComponentRotation();
-
-        AWeaponPawn* NewWeapon = GetWorld()->SpawnActor<AWeaponPawn>(WeaponClass, Location, Rotation, SpawnParams);
-        if (NewWeapon)
+        if (EquippedSubWeapon->GetWeaponType() == WeaponType)
         {
-            NewWeapon->AttachToComponent(SubWeaponSockets[Index], FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-            EquippedSubWeapons.Add(NewWeapon);
+            UE_LOG(LogTemp, Warning, TEXT("Already equipped sub weapon type: %s"), *UEnum::GetValueAsString(WeaponType));
+            return;
         }
+    }
+    if (EquippedSubWeapons.Num() >= MaxSubWeapons)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Cannot add more sub weapons. Maximum limit reached."));
+        return;
+    }
+
+    TSubclassOf<AWeaponPawn>* WeaponClassPtr = SubWeaponClasses.Find(WeaponType);
+    if (!WeaponClassPtr)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Weapon class not found for type: %s"), *UEnum::GetValueAsString(WeaponType));
+        return;
+    }
+
+    int32 Index = EquippedSubWeapons.Num();
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    FVector Location = SubWeaponSockets[Index]->GetComponentLocation();
+    FRotator Rotation = SubWeaponSockets[Index]->GetComponentRotation();
+
+    AWeaponPawn* NewWeapon = GetWorld()->SpawnActor<AWeaponPawn>(*WeaponClassPtr, Location, Rotation, SpawnParams);
+    if (NewWeapon)
+    {
+        NewWeapon->SetOwner(this);
+        NewWeapon->AttachToComponent(SubWeaponSockets[Index], FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        NewWeapon->Initialize();
+        EquippedSubWeapons.Add(NewWeapon);
     }
 }
 
@@ -405,6 +448,18 @@ void APlanetPawn::RemoveSubWeapon(int32 Index)
     {
         EquippedSubWeapons[Index]->Destroy();
         EquippedSubWeapons.RemoveAt(Index);
+    }
+}
+
+void APlanetPawn::BindRotationToAllWeapons()
+{
+    if (MainWeapon)
+    {
+        MainWeapon->HandleMechanicByRotation(CumulativeRotation);
+    }
+    for (AWeaponPawn* EquippedSubWeapon : EquippedSubWeapons)
+    {
+        EquippedSubWeapon->HandleMechanicByRotation(CumulativeRotation);
     }
 }
 

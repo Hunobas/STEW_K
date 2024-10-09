@@ -30,6 +30,7 @@ void ASTEWKGameModeBase::BeginPlay()
 
     GameTimeManager = NewObject<UGameTimeManager>(this);
     GameTimeManager->RegisterComponent();
+    GameTimeManager->ResetTime();
 
     FTimerHandle StartDelayHandle;
     GetWorldTimerManager().SetTimer(StartDelayHandle, this, &ASTEWKGameModeBase::StartGame, StartDelay, false);
@@ -39,7 +40,7 @@ void ASTEWKGameModeBase::BeginPlay()
     InitializeWaveManager();
 }
 
-void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
+void ASTEWKGameModeBase::ActorDied(AActor* DeadActor, bool bIsCaught)
 {
     if (DeadActor == PlayerPawn)
     {
@@ -54,9 +55,9 @@ void ASTEWKGameModeBase::ActorDied(AActor* DeadActor)
     {
         if (WaveManager)
         {
-            WaveManager->SubtractFieldScore(DestroyedEnemy);
+            WaveManager->SubtractFieldScore(DestroyedEnemy->GetFieldScore());
         }
-        if (FMath::RandRange(0.f, 1.f) <= DestroyedEnemy->GetXPDropScale())
+        if (bIsCaught && FMath::RandRange(0.f, 1.f) <= DestroyedEnemy->GetXPDropScale())
         {
             SpawnXpGem(DestroyedEnemy);
         }
@@ -72,8 +73,6 @@ void ASTEWKGameModeBase::StartGame()
     
     GetWorldTimerManager().SetTimer(EnemyListByDifficultyTimerHandle, WaveManager, &UWaveManager::UpdateSpawnableEnemyList, DifficultyTimeInterval, true);
     GetWorldTimerManager().SetTimer(FieldScoreByDifficultyTimerHandle, WaveManager, &UWaveManager::UpdateMaxFieldScore, DifficultyTimeInterval, true);
-
-    WaveManager->SpawnEnemyWave();
 
 }
 

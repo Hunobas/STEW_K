@@ -1,8 +1,6 @@
 // GameTimeManager.cpp
 #include "GameTimeManager.h"
 
-UGameTimeManager* UGameTimeManager::Instance = nullptr;
-
 UGameTimeManager::UGameTimeManager()
 {
     PrimaryComponentTick.bCanEverTick = true;
@@ -13,11 +11,7 @@ UGameTimeManager::UGameTimeManager()
 void UGameTimeManager::BeginPlay()
 {
     Super::BeginPlay();
-    
-    if (!Instance)
-    {
-        Instance = this;
-    }
+    ResetTime();
 }
 
 void UGameTimeManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -30,16 +24,6 @@ void UGameTimeManager::TickComponent(float DeltaTime, ELevelTick TickType, FActo
     }
 }
 
-UGameTimeManager* UGameTimeManager::GetInstance()
-{
-    if (!Instance)
-    {
-        Instance = NewObject<UGameTimeManager>();
-        Instance->AddToRoot(); // 가비지 컬렉션 방지
-    }
-    return Instance;
-}
-
 void UGameTimeManager::PauseTime()
 {
     bIsPaused = true;
@@ -47,5 +31,11 @@ void UGameTimeManager::PauseTime()
 
 void UGameTimeManager::ResumeTime()
 {
+    bIsPaused = false;
+}
+
+void UGameTimeManager::ResetTime()
+{
+    ElapsedTime = 0.0f;
     bIsPaused = false;
 }

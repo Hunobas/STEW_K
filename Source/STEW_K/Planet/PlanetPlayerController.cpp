@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "../UI/RewardSelectionWidget.h"
+#include "../STEWKGameModeBase.h"
 #include "../GameTimeManager.h"
 
 #include "PlanetPlayerController.h"
@@ -22,7 +23,10 @@ void APlanetPlayerController::BeginPlay()
         HUD->AddToViewport();
     }
 
-    GameTimeManager = UGameTimeManager::GetInstance();
+    if (ASTEWKGameModeBase* GameMode = Cast<ASTEWKGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+    {
+        GameTimeManager = GameMode->GetGameTimeManager();
+    }
 }
 
 void APlanetPlayerController::Tick(float DeltaTime)
@@ -32,6 +36,12 @@ void APlanetPlayerController::Tick(float DeltaTime)
 
 FString APlanetPlayerController::GetTimerString() const
 {
+    if (!GameTimeManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("GameTimeManager is null in PlanetPlayerController"));
+        return FString(TEXT("--:--"));
+    }
+
     float TotalSeconds = GameTimeManager->GetElapsedTime();
     int32 Minutes = FMath::FloorToInt(TotalSeconds / 60.0f);
     int32 Seconds = FMath::FloorToInt(FMath::Fmod(TotalSeconds, 60.0f));
@@ -41,7 +51,7 @@ FString APlanetPlayerController::GetTimerString() const
 
 void APlanetPlayerController::ShowRewardSelection()
 {
-    if (RewardSelectionClass)
+    if (RewardSelectionClass && GameTimeManager)
     {
         UGameplayStatics::SetGamePaused(GetWorld(), true);
         GameTimeManager->PauseTime();

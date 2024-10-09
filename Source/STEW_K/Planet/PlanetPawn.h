@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
 
+#include "../Reward/WeaponReward.h"
+
 #include "PlanetPawn.generated.h"
 
 class UCapsuleComponent;
@@ -53,6 +55,7 @@ public:
 	void BlockPlayerInput();
     void UnblockPlayerInput();
 	void HandleDestruction();
+    void AddSubWeapon(EWeaponType WeaponType);
 
 	// ====================== 게터 =============================
 	EPlanetType GetPlanetType() const { return PlanetType; }
@@ -70,6 +73,8 @@ public:
     float GetCurrentXP() const { return CurrentXP; }
 	UFUNCTION(BlueprintPure)
     int32 GetXPToNextLevel() const { return XPToNextLevel; }
+	UFUNCTION(BlueprintPure)
+    float GetCumulativeRotation() const { return CumulativeRotation; }
 
     int32 GetMaxSubWeapons() const { return MaxSubWeapons; }
     int32 GetMaxPassiveItems() const { return MaxPassiveItems; }
@@ -77,6 +82,7 @@ public:
 	int32 GetPassiveItemSlotsFilled() const { return PassiveItemSlotsFilled; }
 
 	AWeaponPawn* GetMainWeapon() const { return MainWeapon; }
+	AWeaponPawn* GetSubWeaponOrNull(EWeaponType WeaponType) const;
 
 	// ====================== 세터 =============================
 	void SetAdditionalHealth(const int32& NewAdditionalHealth);
@@ -98,6 +104,12 @@ protected:
     UInputAction* MouseLeftAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* AimAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    float CumulativeRotation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    float CumulativeDefaultCorrection = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    float CumulativeCorrection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
     float DefaultRotationRate = 100.0f;
@@ -134,8 +146,8 @@ private:
 
 	void InitializeWeaponSockets();
     void SpawnMainWeapon();
-    void AddSubWeapon(TSubclassOf<AWeaponPawn> WeaponClass);
     void RemoveSubWeapon(int32 Index);
+	void BindRotationToAllWeapons();
 
 	void CalculateXPToNextLevel();
 
@@ -181,10 +193,8 @@ private:
 	int32 MaxSubWeapons = 4;
 	UPROPERTY(VisibleDefaultsOnly, Category = "무기 슬롯")
 	int32 MaxPassiveItems = 6;
-	UPROPERTY(VisibleDefaultsOnly, Category = "무기 슬롯")
-	int32 TypesOfSubWeapons = 6;
 	UPROPERTY(EditDefaultsOnly, Category = "무기 슬롯")
-    TArray<TSubclassOf<AWeaponPawn>> SubWeaponClasses;
+    TMap<EWeaponType, TSubclassOf<AWeaponPawn>> SubWeaponClasses;
 	UPROPERTY()
     TArray<AWeaponPawn*> EquippedSubWeapons;
 

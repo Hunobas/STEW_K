@@ -65,10 +65,6 @@ protected:
 
 	// ====================== 수치 기획 =============================
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-	float JustAimDelay = 1.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
-	float JustAimDamage = 40.f;
-	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float ShootDelay = 2.f;
 	UPROPERTY(EditDefaultsOnly, Category = "전투 스케일")
 	float HealthScale = 1.f;

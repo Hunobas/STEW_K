@@ -42,13 +42,19 @@ void UWaveManager::UpdateSpawnableEnemyList()
 
 void UWaveManager::SpawnEnemyWave()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Inside SpawnEnemyWave: %d / %d"), CurrentFieldScore, MaxFieldScore);
-    if (SpawnableEnemyList.IsEmpty() || CurrentFieldScore > MaxFieldScore) return;
+    if (SpawnableEnemyList.IsEmpty() || !CelestialBody || CurrentFieldScore > MaxFieldScore) return;
 
-    while (CurrentFieldScore <= MaxFieldScore)
+    int32 SpawnLimit = FMath::Max(50, (MaxFieldScore - CurrentFieldScore) / 5);
+    int32 SpawnCount = 0;
+
+    while (CurrentFieldScore <= MaxFieldScore && SpawnCount < SpawnLimit)
     {
         SpawnEnemyAtRandomSpot(SpawnableEnemyList[FMath::RandRange(0, SpawnableEnemyList.Num() - 1)]);
+        SpawnCount++;
     }
+    CelestialBody->FreeAllAimPoints();
+
+    UE_LOG(LogTemp, Log, TEXT("SpawnEnemyWave spawned %d enemies"), SpawnCount);
 }
 
 void UWaveManager::SpawnEnemyAtRandomSpot(TSubclassOf<AEnemyCharacter> EnemyClass)
@@ -69,9 +75,9 @@ void UWaveManager::SpawnEnemyAtRandomSpot(TSubclassOf<AEnemyCharacter> EnemyClas
     if (SpawnedEnemy)
     {
         CurrentFieldScore += FMath::Max(1, SpawnedEnemy->GetFieldScore());
+        CelestialBody->MarkAimPointAsOccupied(SpawnPoint);
         if (SpawnedEnemy->IsA(ZacoBeam))
         {
-            CelestialBody->MarkAimPointAsOccupied(SpawnPoint);
             SpawnedEnemy->AttachToComponent(SpawnPoint, FAttachmentTransformRules::KeepWorldTransform);
         }
     }
@@ -79,7 +85,7 @@ void UWaveManager::SpawnEnemyAtRandomSpot(TSubclassOf<AEnemyCharacter> EnemyClas
 
 void UWaveManager::SpawnEnemiesAtNthRow(TSubclassOf<AEnemyCharacter> EnemyClass, int32 n)
 {
-    if (CurrentFieldScore >= MaxFieldScore || !EnemyClass || !CelestialBody) return;
+    if (!EnemyClass || !CelestialBody) return;
 
     TArray<USceneComponent*> SpawnPoints = CelestialBody->GetNthPointsRowOrNull(n);
     if (SpawnPoints.IsEmpty()) return;
@@ -97,8 +103,8 @@ void UWaveManager::SpawnEnemiesAtNthRow(TSubclassOf<AEnemyCharacter> EnemyClass,
     }
 }
 
-void UWaveManager::SubtractFieldScore(AEnemyCharacter* DestroyedEnemy)
+void UWaveManager::SubtractFieldScore(int32 Score)
 {
-    CurrentFieldScore -= DestroyedEnemy->GetFieldScore();
-    UE_LOG(LogTemp, Warning, TEXT("Inside SubtractFieldScore: %d"), CurrentFieldScore);
+    CurrentFieldScore -= Score;
+    UE_LOG(LogTemp, Warning, TEXT("Inside SubtractFieldScore: -%d: %d / %d"), Score, CurrentFieldScore, MaxFieldScore);
 }
