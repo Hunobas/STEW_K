@@ -27,5 +27,3 @@ Unreal 3D TPS shooter game inspired by Vampire Survivors.
 ### USE MOUSE ONLY
 
 # Game System
-
-# **More to be added!**
