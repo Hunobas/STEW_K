@@ -28,7 +28,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Wave Management")
     void SpawnEnemyWave();
     UFUNCTION(BlueprintCallable, Category = "Wave Management")
-    void SpawnEnemiesAtNthRow(TSubclassOf<AEnemyCharacter> EnemyClass, int32 n);
+    void SpawnEnemiesAtNthRow(const int32& N, TSubclassOf<AEnemyCharacter> EnemyClass = nullptr);
     UFUNCTION(BlueprintCallable, Category = "Wave Management")
     void SubtractFieldScore(int32 Score);
 

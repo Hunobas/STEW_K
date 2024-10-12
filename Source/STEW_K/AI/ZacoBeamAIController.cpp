@@ -3,7 +3,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "../Enemy/EnemyCharacter.h"
-#include "../Planet/PlanetPawn.h"
+#include "../Player/PlanetPawn.h"
 
 #include "ZacoBeamAIController.h"
 

@@ -54,7 +54,9 @@ private:
     FTimerHandle GameTimerHandle;
     FTimerHandle EnemyListByDifficultyTimerHandle;
     FTimerHandle FieldScoreByDifficultyTimerHandle;
+    FTimerHandle EnemyWaveSpawnTimerHandle;
     float DifficultyTimeInterval = 5.0f;
+    float EnemyWaveSpawnTimeInterval = 60.0f;
 
     UPROPERTY()
     UGameTimeManager* GameTimeManager;

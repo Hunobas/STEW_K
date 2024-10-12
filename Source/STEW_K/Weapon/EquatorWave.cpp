@@ -5,7 +5,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "../Planet/PlanetPawn.h"
+#include "../Player/PlanetPawn.h"
 
 #include "EquatorWave.h"
 

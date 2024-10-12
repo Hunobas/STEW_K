@@ -4,7 +4,7 @@
 #include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "../../Planet/PlanetPawn.h"
+#include "../../Player/PlanetPawn.h"
 #include "../../STEWKGameModeBase.h"
 #include "../../CelestialBody.h"
 

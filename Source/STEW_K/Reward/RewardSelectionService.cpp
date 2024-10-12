@@ -4,7 +4,7 @@
 #include "WeaponReward.h"
 #include "PassiveItemReward.h"
 #include "PlayerPowerUpReward.h"
-#include "../Planet/PlanetPawn.h"
+#include "../Player/PlanetPawn.h"
 #include "../Weapon/WeaponPawn.h"
 
 #include "RewardSelectionService.h"

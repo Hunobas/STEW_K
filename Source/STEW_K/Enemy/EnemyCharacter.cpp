@@ -7,7 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
-#include "../Planet/PlanetPawn.h"
+#include "../Player/PlanetPawn.h"
 #include "../STEWKGameModeBase.h"
 #include "../HealthComponent.h"
 #include "../WaveManager.h"

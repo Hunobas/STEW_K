@@ -3,7 +3,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "Planet/PlanetPawn.h"
+#include "Player/PlanetPawn.h"
 
 #include "CelestialBody.h"
 
@@ -91,6 +91,7 @@ TArray<USceneComponent*> ACelestialBody::GetNthPointsRowOrNull(const int32& n) c
     {
         return ResultRow;
     }
+    ResultRow.Empty();
 
     int32 StartIndex = (n - 1) * PointsPerRow;
     int32 EndIndex = n * PointsPerRow;

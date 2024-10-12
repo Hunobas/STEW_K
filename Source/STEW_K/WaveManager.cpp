@@ -83,11 +83,12 @@ void UWaveManager::SpawnEnemyAtRandomSpot(TSubclassOf<AEnemyCharacter> EnemyClas
     }
 }
 
-void UWaveManager::SpawnEnemiesAtNthRow(TSubclassOf<AEnemyCharacter> EnemyClass, int32 n)
+void UWaveManager::SpawnEnemiesAtNthRow(const int32& N, TSubclassOf<AEnemyCharacter> EnemyClass)
 {
+    if (!EnemyClass) EnemyClass = ZacoSwarm;
     if (!EnemyClass || !CelestialBody) return;
 
-    TArray<USceneComponent*> SpawnPoints = CelestialBody->GetNthPointsRowOrNull(n);
+    TArray<USceneComponent*> SpawnPoints = CelestialBody->GetNthPointsRowOrNull(N);
     if (SpawnPoints.IsEmpty()) return;
 
     FActorSpawnParameters SpawnParams;

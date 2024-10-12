@@ -3,7 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "STEWKGameModeBase.h"
-#include "Planet/PlanetPawn.h"
+#include "Player/PlanetPawn.h"
 #include "Enemy/EnemyCharacter.h"
 
 #include "HealthComponent.h"

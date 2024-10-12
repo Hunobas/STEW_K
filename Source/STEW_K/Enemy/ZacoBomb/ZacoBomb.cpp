@@ -5,7 +5,7 @@
 #include "NiagaraFunctionLibrary.h"
 
 #include "../../STEWKGameModeBase.h"
-#include "../../Planet/PlanetPawn.h"
+#include "../../Player/PlanetPawn.h"
 
 #include "ZacoBomb.h"
 

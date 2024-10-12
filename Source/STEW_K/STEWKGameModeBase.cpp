@@ -2,7 +2,8 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "Planet/PlanetPawn.h"
+#include "Player/PlanetPawn.h"
+#include "Player/PlanetPlayerController.h"
 #include "Enemy/EnemyCharacter.h"
 #include "Reward/RewardSelectionService.h"
 #include "XPGem.h"
@@ -44,10 +45,10 @@ void ASTEWKGameModeBase::ActorDied(AActor* DeadActor, bool bIsCaught)
 {
     if (DeadActor == PlayerPawn)
     {
-        if (APlayerController* PlayerController = Cast<APlayerController>(PlayerPawn->GetController()))
+        if (APlanetPlayerController* PlayerController = Cast<APlanetPlayerController>(PlayerPawn->GetController()))
         {
             PlayerPawn->DisableInput(PlayerController);
-            PlayerController->bShowMouseCursor = true;
+            PlayerController->ShowLoseGame();
         }
         PlayerPawn->HandleDestruction();
     }
@@ -73,7 +74,16 @@ void ASTEWKGameModeBase::StartGame()
     
     GetWorldTimerManager().SetTimer(EnemyListByDifficultyTimerHandle, WaveManager, &UWaveManager::UpdateSpawnableEnemyList, DifficultyTimeInterval, true);
     GetWorldTimerManager().SetTimer(FieldScoreByDifficultyTimerHandle, WaveManager, &UWaveManager::UpdateMaxFieldScore, DifficultyTimeInterval, true);
-
+    
+    FTimerDelegate SpawnTimerDelegate;
+    SpawnTimerDelegate.BindLambda([this]()
+    {
+        if (WaveManager)
+        {
+            WaveManager->SpawnEnemiesAtNthRow(FMath::RandRange(1, 5));
+        }
+    });
+    GetWorldTimerManager().SetTimer(EnemyWaveSpawnTimerHandle, SpawnTimerDelegate, EnemyWaveSpawnTimeInterval, true);
 }
 
 void ASTEWKGameModeBase::SpawnXpGem(AEnemyCharacter* DestroyedEnemy)
@@ -94,6 +104,18 @@ void ASTEWKGameModeBase::EndGame()
     GetWorldTimerManager().ClearTimer(EnemyListByDifficultyTimerHandle);
     GetWorldTimerManager().ClearTimer(FieldScoreByDifficultyTimerHandle);
     UE_LOG(LogTemp, Warning, TEXT("Game Over - Player Wins!"));
+
+    if (PlayerPawn)
+    {
+        if (APlanetPlayerController* PlayerController = Cast<APlanetPlayerController>(PlayerPawn->GetController()))
+        {
+            PlayerController->ShowWinGame();
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerPawn is null in EndGame"));
+    }
 }
 
 void ASTEWKGameModeBase::InitializeRewardSelectionService()

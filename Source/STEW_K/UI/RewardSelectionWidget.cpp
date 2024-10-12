@@ -6,7 +6,7 @@
 #include "Components/PanelWidget.h"
 
 #include "../STEWKGameModeBase.h"
-#include "../Planet/PlanetPlayerController.h"
+#include "../Player/PlanetPlayerController.h"
 #include "../Reward/RewardSelectionService.h"
 #include "../Reward/WeaponReward.h"
 #include "../Reward/PassiveItemReward.h"
