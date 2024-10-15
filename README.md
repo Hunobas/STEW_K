@@ -37,3 +37,10 @@ This stat cycles between values from 0 to 360 while accumulating, and you can co
 
 ### Enemy Wave
 
+![Untitledvideo2-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/dd68c407-825d-426a-b3ce-9d28def10dcd)
+
+**Celestial Body** Actor: An actor attached to the player, creating spawn point components on a spherical virtual surface where enemies are spawned.
+
+**Field Score** and **Spawnable Enemy List**: Small waves of enemies are spawned every 5 seconds, with each enemy having an individual field score. When the total field score, **Current Field Score**, exceeds **Max Field Score**, the spawning of small waves is designed to stop. The **Max Field Score** increases over time following a sigmoid function. Additionally, as in-game time progresses, enemies with higher field scores are added to the **Spawnable Enemy List**, while those with lower field scores are removed.
+
+**Threatening Waves**: Large waves are summoned every 1 minute to keep the player on edge. The summoned large waves also affect the **Current Field Score**.
