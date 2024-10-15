@@ -27,3 +27,13 @@ Unreal 3D TPS shooter game inspired by Vampire Survivors.
 ### USE MOUSE ONLY
 
 # Game System
+
+### Planet Torque
+
+![Untitledvideo1-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/d6f363f7-b987-4a16-8ce2-d919cd6fbc3f)
+
+In-game stats that accumulate based on mouse input.
+This stat cycles between values from 0 to 360 while accumulating, and you can control or trigger the firing of a weapon linked to this stat.
+
+### Enemy Wave
+
